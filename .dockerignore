@@ -1,0 +1,7 @@
+.git
+**/build
+**/.gradle
+**/.idea
+**/.vscode
+frontend/.next
+node_modules
