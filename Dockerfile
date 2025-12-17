@@ -8,5 +8,7 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=builder /src/backend/media-tracker-api/build/libs/*.jar app.jar
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0"
+RUN useradd -m spring && chown -R spring:spring /app
+USER spring
 EXPOSE 8080
 ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]

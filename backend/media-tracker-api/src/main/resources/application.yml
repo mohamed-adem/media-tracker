@@ -2,6 +2,8 @@ server:
   port: 8080
 
 spring:
+  main:
+    lazy-initialization: true
   datasource:
     url: jdbc:postgresql://localhost:5432/mt_db
     username: mt_user
@@ -26,15 +28,15 @@ app:
     expirationSeconds: 3600
     refreshExpirationSeconds: 1209600
   seed:
-    mohamedEmail: "mohamed@example.com"
-    mohamedDisplayName: "Mohamed"
-    mohamedPassword: "StrongPass"
+    mohamedEmail: "${SEED_EMAIL:mohamed@example.com}"
+    mohamedDisplayName: "${SEED_DISPLAY_NAME:Mohamed}"
+    mohamedPassword: "${SEED_PASSWORD:StrongPass}"
     resetOnStart: true
 logging:
   level:
-    org.springframework.security: DEBUG
+    org.springframework.security: INFO
 mediatracker:
   tmdb:
-    apiKey: eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyNTlmZGVmY2M0ZTg2OTVjNWY2MDM3Y2Q1ZGI5MDE2NyIsIm5iZiI6MTc1NjAwMDcyMS4wMzksInN1YiI6IjY4YWE3MWQxMDkxMWNiODI0ZjZjZTJjNyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.cJSsE2ZP_IAItQH0m3_PveB9F_qub8CCuLbh6jvGGy4
+    apiKey: ${TMDB_API_KEY}
   rawg:
-    apiKey: 4daaf584247b4e21b8dde09b17ff82b8
+    apiKey: ${RAWG_API_KEY}
