@@ -13,13 +13,19 @@ jobs:
         env:
           URL: ${{ secrets.BACKEND_URL }}
         run: |
+          # Strip trailing slash from URL if present
+          URL=${URL%/}
+          
           if [ -z "$URL" ]; then
             echo "BACKEND_URL secret not set. Skipping ping."
             echo "Please set BACKEND_URL in Repository Settings -> Secrets -> Actions"
             exit 0
           fi
+          
           echo "Pinging $URL/api/health..."
-          status_code=$(curl -o /dev/null -s -w "%{http_code}\n" "$URL/api/health")
+          # -L: Follow redirects
+          # -A: User-Agent (avoid WAF blocking)
+          status_code=$(curl -L -A "GitHubActionKeepAlive/1.0" -o /dev/null -s -w "%{http_code}\n" "$URL/api/health")
           if [ "$status_code" != "200" ]; then
             echo "Ping failed with status $status_code"
             exit 1
