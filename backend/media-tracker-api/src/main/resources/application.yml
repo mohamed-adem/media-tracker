@@ -28,9 +28,9 @@ app:
     expirationSeconds: 3600
     refreshExpirationSeconds: 1209600
   seed:
-    mohamedEmail: "${SEED_EMAIL:mohamed@example.com}"
-    mohamedDisplayName: "${SEED_DISPLAY_NAME:Mohamed}"
-    mohamedPassword: "${SEED_PASSWORD:StrongPass}"
+    mohamedEmail: "${APP_SEED_MOHAMEDEMAIL:mohamed@example.com}"
+    mohamedDisplayName: "${APP_SEED_MOHAMEDISPLAYNAME:Mohamed}"
+    mohamedPassword: "${APP_SEED_MOHAMEDPASSWORD:StrongPass}"
     resetOnStart: true
 logging:
   level:
