@@ -32,8 +32,6 @@ public class EnsureMohamed {
 
   @PostConstruct
   @Transactional
-  @PostConstruct
-  @Transactional
   public void init() {
     System.out.println("EnsureMohamed: Starting seeder...");
     System.out.println("EnsureMohamed: Configured Email = " + email);
