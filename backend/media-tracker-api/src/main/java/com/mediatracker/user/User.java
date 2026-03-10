@@ -21,6 +21,9 @@ public class User {
     @Enumerated(EnumType.STRING) @Column(nullable=false)
     private Role role = Role.USER;
 
+    @Column(name="bio", columnDefinition="text")
+    private String bio;
+
     @Column(name="created_at", nullable=false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
@@ -35,6 +38,8 @@ public class User {
     public void setDisplayName(String displayName) { this.displayName = displayName; }
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
 }

@@ -61,7 +61,8 @@ public class ReviewController {
         saved.getBody(),
         media.getKind(),
         media.getYear(),
-        media.getPosterUrl()
+        media.getPosterUrl(),
+        saved.getCreatedAt()
     );
   }
 
@@ -77,7 +78,8 @@ public class ReviewController {
             rv.getBody(),
             rv.getMedia().getKind(),
             rv.getMedia().getYear(),
-            rv.getMedia().getPosterUrl()))
+            rv.getMedia().getPosterUrl(),
+            rv.getCreatedAt()))
         .toList();
   }
 

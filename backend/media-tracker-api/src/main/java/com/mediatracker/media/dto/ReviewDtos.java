@@ -3,6 +3,7 @@ package com.mediatracker.media.dto;
 import com.mediatracker.media.MediaKind;
 import jakarta.validation.constraints.*;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public class ReviewDtos {
@@ -14,7 +15,7 @@ public class ReviewDtos {
       Integer year,
       @Min(1) @Max(5) int rating,
       @Size(max = 4000) String body,
-      String posterUrl 
+      String posterUrl
   ) {}
 
   public record View(
@@ -25,6 +26,7 @@ public class ReviewDtos {
       String body,
       MediaKind kind,
       Integer year,
-      String posterUrl
+      String posterUrl,
+      OffsetDateTime createdAt
   ) {}
 }
