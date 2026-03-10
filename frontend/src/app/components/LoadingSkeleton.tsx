@@ -45,6 +45,29 @@ export function ProfileSkeleton() {
   );
 }
 
+export function CollectionCardSkeleton() {
+  return (
+    <div className="card-glass">
+      <div className="skeleton w-full aspect-[2/3] rounded-lg mb-2" />
+      <div className="skeleton h-4 w-3/4 mb-1" />
+      <div className="skeleton h-3 w-1/2" />
+    </div>
+  );
+}
+
+export function ProfileHeaderSkeleton() {
+  return (
+    <div className="card-glass flex items-center gap-6 p-6">
+      <div className="skeleton w-20 h-20 rounded-full flex-none" />
+      <div className="flex-1 space-y-2">
+        <div className="skeleton h-6 w-48" />
+        <div className="skeleton h-4 w-64" />
+        <div className="skeleton h-3 w-32" />
+      </div>
+    </div>
+  );
+}
+
 export function FriendCardSkeleton() {
   return (
     <div className="card flex items-center justify-between">

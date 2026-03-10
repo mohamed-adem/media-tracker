@@ -171,6 +171,19 @@ export type AuthResponse = { accessToken: string; refreshToken: string };
 export type RegisterPayload = { email: string; password: string; displayName: string };
 export type LoginPayload = { email: string; password: string };
 
+export async function patchJSON<T>(
+  path: string,
+  data: unknown,
+  opts: FetchOpts = {}
+): Promise<T> {
+  return apiFetch<T>(path, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+    token: opts.token,
+    ...(opts.init ?? {}),
+  });
+}
+
 export const Auth = {
   register: (data: RegisterPayload) =>
     postJSON<AuthResponse>("/api/auth/register", data),

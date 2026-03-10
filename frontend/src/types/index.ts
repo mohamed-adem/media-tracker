@@ -5,6 +5,8 @@ export type Me = {
   email: string;
   displayName: string;
   role: string;
+  bio: string;
+  createdAt: string;
 };
 
 export type Review = {
@@ -16,6 +18,7 @@ export type Review = {
   kind?: MediaKind;
   year?: number | null;
   posterUrl?: string | null;
+  createdAt?: string;
 };
 
 export type FeedItem = {

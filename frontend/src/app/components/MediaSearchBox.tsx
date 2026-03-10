@@ -9,7 +9,7 @@ export default function MediaSearchBox({
   onPick,
   placeholder = "Search movies, shows, games, books...",
 }: {
-  kind: MediaKind;
+  kind: MediaKind | "ALL";
   onPick: (item: SearchItem) => void;
   placeholder?: string;
 }) {
