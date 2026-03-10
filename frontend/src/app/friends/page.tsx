@@ -6,12 +6,11 @@ import { loadAccessToken } from "@/lib/auth";
 import { useRequireAuth } from "@/hooks/useAuth";
 import { FriendCardSkeleton } from "@/app/components/LoadingSkeleton";
 import EmptyState from "@/app/components/EmptyState";
-import type { Me, FriendView, IncomingRequest, UserResult } from "@/types";
+import type { FriendView, IncomingRequest, UserResult } from "@/types";
 
 export default function FriendsPage() {
   const { loading: authLoading } = useRequireAuth();
 
-  const [me, setMe] = useState<Me | null>(null);
   const [friends, setFriends] = useState<FriendView[]>([]);
   const [incoming, setIncoming] = useState<IncomingRequest[]>([]);
   const [query, setQuery] = useState("");
@@ -25,8 +24,6 @@ export default function FriendsPage() {
     if (!token) return;
     setErr(null);
     try {
-      const u = await apiFetch<Me>("/api/users/me", { token });
-      setMe(u);
       const myFriends = await apiFetch<FriendView[]>("/api/friends", { token });
       setFriends(myFriends);
       const reqs = await apiFetch<IncomingRequest[]>("/api/friends/requests", { token });
@@ -41,8 +38,6 @@ export default function FriendsPage() {
   useEffect(() => {
     if (authLoading) return;
     refreshAll();
-    const t = setInterval(refreshAll, 15000);
-    return () => clearInterval(t);
   }, [authLoading]);
 
   async function searchUsers(e: React.FormEvent) {
@@ -119,7 +114,12 @@ export default function FriendsPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-fade-in-up">
-      <h1 className="text-3xl font-bold">Friends</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-3xl font-bold">Friends</h1>
+        <button className="btn-outline text-sm" onClick={refreshAll} disabled={busy}>
+          Refresh
+        </button>
+      </div>
 
       {err && (
         <div className="text-sm text-danger bg-danger-muted rounded-lg px-3 py-2">{err}</div>
