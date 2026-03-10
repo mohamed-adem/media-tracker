@@ -3,10 +3,18 @@
 import Link from "next/link";
 import { isLoggedIn } from "@/lib/auth";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const r = useRouter();
   const [authed, setAuthed] = useState(false);
-  useEffect(() => setAuthed(isLoggedIn()), []);
+  useEffect(() => {
+    const loggedIn = isLoggedIn();
+    setAuthed(loggedIn);
+    if (loggedIn) {
+      r.replace("/dashboard");
+    }
+  }, [r]);
 
   return (
     <div className="relative">
@@ -27,11 +35,7 @@ export default function HomePage() {
             <Link href="/login" className="btn">Log in</Link>
             <Link href="/register" className="btn-outline">Register</Link>
           </div>
-        ) : (
-          <div className="mt-8">
-            <Link href="/dashboard" className="btn">Go to dashboard</Link>
-          </div>
-        )}
+        ) : null}
       </section>
 
       {/* Feature cards */}

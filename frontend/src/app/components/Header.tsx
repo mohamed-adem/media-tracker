@@ -5,12 +5,13 @@ import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { isLoggedIn, logout } from "@/lib/auth";
 import MobileMenu from "./MobileMenu";
+import HeaderSearch from "./HeaderSearch";
+import { useQuickAdd } from "./QuickAddProvider";
 
 const navLinks = [
-  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard", label: "Home" },
   { href: "/friends", label: "Friends" },
-  { href: "/feed", label: "Feed" },
-  { href: "/account", label: "Account" },
+  { href: "/profile", label: "Profile" },
 ];
 
 export default function Header() {
@@ -18,6 +19,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const r = useRouter();
+  const quickAdd = useQuickAdd();
 
   useEffect(() => setAuthed(isLoggedIn()), [pathname]);
 
@@ -61,6 +63,12 @@ export default function Header() {
 
           {/* Right side */}
           <div className="ml-auto flex items-center gap-2">
+            {authed && <HeaderSearch />}
+            {authed && (
+              <button onClick={() => quickAdd?.openQuickAdd("MOVIE")} className="btn hidden sm:inline-flex text-sm">
+                + Add
+              </button>
+            )}
             {authed && (
               <button onClick={doLogout} className="btn-ghost hidden sm:inline-flex text-sm">
                 Log out

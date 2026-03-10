@@ -12,11 +12,12 @@ type MobileMenuProps = {
 };
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/dashboard", label: "Dashboard", auth: true },
+  { href: "/", label: "Home", auth: false },
+  { href: "/dashboard", label: "Home", auth: true },
   { href: "/friends", label: "Friends", auth: true },
-  { href: "/feed", label: "Feed", auth: true },
-  { href: "/account", label: "Account", auth: true },
+  { href: "/profile", label: "Profile", auth: true },
+  { href: "/login", label: "Log in", auth: false },
+  { href: "/register", label: "Register", auth: false },
 ];
 
 export default function MobileMenu({ open, onClose, authed, onLogout }: MobileMenuProps) {
@@ -61,7 +62,7 @@ export default function MobileMenu({ open, onClose, authed, onLogout }: MobileMe
         {/* Links */}
         <div className="flex-1 py-2">
           {navLinks
-            .filter((link) => !link.auth || authed)
+            .filter((link) => (link.auth ? authed : !authed))
             .map((link) => {
               const active = pathname === link.href;
               return (
