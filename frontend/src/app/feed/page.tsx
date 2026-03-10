@@ -2,21 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
-import { loadAccessToken, logout } from "@/lib/auth";
-import { useRouter } from "next/navigation";
-
-type FeedItem = {
-  reviewId: string;
-  authorId: string;
-  author: string;
-  title: string;
-  rating: number | null;
-  body: string | null;
-  createdAt: string; 
-};
+import { loadAccessToken } from "@/lib/auth";
+import { useRequireAuth } from "@/hooks/useAuth";
+import { FeedItemSkeleton } from "@/app/components/LoadingSkeleton";
+import { StarsDisplay } from "@/app/components/StarRating";
+import EmptyState from "@/app/components/EmptyState";
+import Link from "next/link";
+import type { FeedItem } from "@/types";
 
 export default function FeedPage() {
-  const r = useRouter();
+  const { loading: authLoading } = useRequireAuth();
   const [items, setItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -25,65 +20,108 @@ export default function FeedPage() {
     setErr(null);
     setLoading(true);
     const token = loadAccessToken();
-    if (!token) {
-      r.replace("/login");
-      return;
-    }
+    if (!token) return;
     try {
-      const data = await apiFetch<FeedItem[]>("/api/feed", { token, cache: "no-store" });
+      const data = await apiFetch<FeedItem[]>("/api/feed", { token });
       setItems(data);
-    } catch (e: any) {
-      setErr(e?.message ?? "Failed to load feed");
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : "Failed to load feed");
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => { load(); /* on mount */ }, []);
+  useEffect(() => {
+    if (authLoading) return;
+    load();
+  }, [authLoading]);
 
-  function doLogout() {
-    logout();
-    r.replace("/login");
-  }
+  if (authLoading) return null;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Friends’ Feed</h1>
-        <div className="flex gap-2">
-          <button className="btn" onClick={load} disabled={loading}>
-            {loading ? "Refreshing…" : "Refresh"}
-          </button>
-          <button className="btn" onClick={doLogout}>Log out</button>
-        </div>
+        <h1 className="text-3xl font-bold">Friends&apos; Feed</h1>
+        <button className="btn-outline" onClick={load} disabled={loading}>
+          {loading ? "Refreshing..." : "Refresh"}
+        </button>
       </div>
 
-      {err && <p className="text-red-600">{err}</p>}
-      {loading && !items.length && <p>Loading…</p>}
+      {err && (
+        <div className="text-sm text-danger bg-danger-muted rounded-lg px-3 py-2">{err}</div>
+      )}
 
-      {!loading && items.length === 0 && (
-        <div className="rounded-lg border p-4">
-          <p className="font-medium">Your feed is empty.</p>
-          <p className="text-sm opacity-80 mt-1">
-            Add friends and they’ll show up here when they post reviews.
-          </p>
+      {/* Loading skeletons */}
+      {loading && items.length === 0 && (
+        <div className="space-y-4">
+          <FeedItemSkeleton />
+          <FeedItemSkeleton />
+          <FeedItemSkeleton />
         </div>
       )}
 
-      <div className="space-y-3">
+      {/* Empty state */}
+      {!loading && items.length === 0 && (
+        <EmptyState
+          icon="📡"
+          title="Your feed is empty"
+          description="Add friends and they'll show up here when they post reviews."
+          action={
+            <Link href="/friends" className="btn">
+              Find friends
+            </Link>
+          }
+        />
+      )}
+
+      {/* Feed items */}
+      <div className="space-y-4">
         {items.map((it) => (
-          <div key={it.reviewId} className="rounded-lg border p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-80">{new Date(it.createdAt).toLocaleString()}</p>
-                <h3 className="font-semibold mt-1">{it.author}</h3>
+          <div
+            key={it.reviewId}
+            className="card-glass hover:border-accent/30 transition-colors"
+          >
+            <div className="flex gap-3">
+              {/* Poster */}
+              {it.posterUrl ? (
+                <img
+                  src={it.posterUrl}
+                  alt=""
+                  width={48}
+                  height={72}
+                  className="w-12 h-[72px] rounded-lg object-cover flex-none"
+                />
+              ) : (
+                <div className="w-12 h-[72px] rounded-lg bg-bg-hover flex-none flex items-center justify-center text-text-tertiary text-lg">
+                  🎬
+                </div>
+              )}
+
+              <div className="flex-1 min-w-0">
+                {/* Header row */}
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-text-primary">{it.author}</span>
+                  <span className="text-xs text-text-tertiary">
+                    {new Date(it.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+
+                {/* Title + rating */}
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-sm font-medium text-text-primary truncate">{it.title}</span>
+                  {it.rating != null && (
+                    <span className="flex-none">
+                      <StarsDisplay value={it.rating} small />
+                    </span>
+                  )}
+                </div>
+
+                {/* Body */}
+                {it.body && (
+                  <p className="text-sm text-text-secondary mt-1 line-clamp-3">{it.body}</p>
+                )}
               </div>
-              <span className="text-sm">
-                {it.rating == null ? "—/5" : `${it.rating}/5`}
-              </span>
             </div>
-            <p className="mt-2"><span className="font-medium">{it.title}</span></p>
-            {it.body && <p className="text-sm mt-2 opacity-90">{it.body}</p>}
           </div>
         ))}
       </div>

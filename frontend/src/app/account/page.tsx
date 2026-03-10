@@ -3,48 +3,76 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
-import { isLoggedIn, logout } from "@/lib/auth";
-
-type Me = { id: string; email: string; displayName: string; role: string };
+import { logout } from "@/lib/auth";
+import { useRequireAuth } from "@/hooks/useAuth";
+import { ProfileSkeleton } from "@/app/components/LoadingSkeleton";
+import type { Me } from "@/types";
 
 export default function AccountPage() {
   const r = useRouter();
+  const { loading: authLoading } = useRequireAuth();
   const [me, setMe] = useState<Me | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isLoggedIn()) return r.replace("/login");
+    if (authLoading) return;
     (async () => {
       try {
         const u = await apiFetch<Me>("/api/users/me");
         setMe(u);
-      } catch (e: any) {
-        setErr(e?.message ?? "Failed to fetch user");
+      } catch (e: unknown) {
+        setErr(e instanceof Error ? e.message : "Failed to fetch user");
       }
     })();
-  }, [r]);
+  }, [authLoading]);
 
   function doLogout() {
     logout();
     r.replace("/login");
   }
 
+  if (authLoading) return null;
+
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Account</h1>
-        <button className="btn-primary" onClick={doLogout}>Log out</button>
+        <h1 className="text-3xl font-bold">Account</h1>
+        <button className="btn-danger" onClick={doLogout}>
+          Log out
+        </button>
       </div>
 
-      {err && <p className="text-red-600">{err}</p>}
-      {!me && !err && <p>Loading…</p>}
+      {err && (
+        <div className="text-sm text-danger bg-danger-muted rounded-lg px-3 py-2">{err}</div>
+      )}
+
+      {!me && !err && <ProfileSkeleton />}
 
       {me && (
-        <div className="rounded-lg border bg-white p-4">
-          <p><span className="font-medium">Name:</span> {me.displayName}</p>
-          <p><span className="font-medium">Email:</span> {me.email}</p>
-          <p><span className="font-medium">Role:</span> {me.role}</p>
-          <p><span className="font-medium">ID:</span> {me.id}</p>
+        <div className="card-glass p-6">
+          <div className="flex items-center gap-4">
+            {/* Avatar */}
+            <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center text-bg-base text-2xl font-bold flex-none">
+              {me.displayName.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-text-primary">{me.displayName}</h2>
+              <p className="text-sm text-text-secondary">{me.email}</p>
+            </div>
+          </div>
+
+          <div className="mt-6 space-y-3">
+            <div className="flex items-center justify-between py-2 border-b border-border-muted">
+              <span className="text-sm text-text-secondary">Role</span>
+              <span className="text-sm font-medium text-accent bg-accent-muted px-2 py-0.5 rounded-full">
+                {me.role}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm text-text-secondary">User ID</span>
+              <span className="text-xs text-text-tertiary font-mono">{me.id}</span>
+            </div>
+          </div>
         </div>
       )}
     </div>

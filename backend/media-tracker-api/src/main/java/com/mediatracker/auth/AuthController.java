@@ -37,7 +37,7 @@ public class AuthController {
         // Auto-friend with seed user — skip gracefully if seed user doesn't exist
         userRepository.findByEmailIgnoreCase(moEmail).ifPresent(mo -> {
             userRepository.findByEmailIgnoreCase(req.email()).ifPresent(newUser -> {
-                friendService.linkBoth(newUser.getId(), mo.getId());
+                friendService.linkBothAccepted(newUser.getId(), mo.getId());
             });
         });
 

@@ -1,60 +1,100 @@
 "use client";
 
-import { useMemo } from "react";
+import { useId } from "react";
 
-type Props = {
-  value: number;                
-  onChange: (v: number) => void;
-  size?: number;
-};
+/* ---------- Read-only star display ---------- */
 
-export default function StarRating({ value, onChange, size = 22 }: Props) {
-  const steps = useMemo(() => Array.from({ length: 10 }, (_, i) => (i + 1) * 0.5), []);
+export function StarsDisplay({ value, small = false }: { value: number; small?: boolean }) {
+  const uid = useId();
+  const full = Math.floor(value);
+  const half = value - full >= 0.5;
+
   return (
-    <div className="inline-flex items-center gap-1" aria-label="Rating">
-      {steps.map((step) => {
-        const filled = value >= step;
-        const half = Math.abs(value - step) === 0.5 && !filled;
+    <div className={`inline-flex ${small ? "scale-90" : ""}`} aria-label={`${value} stars`}>
+      {Array.from({ length: 5 }).map((_, i) => {
+        const filled = i < full;
+        const showHalf = i === full && half;
         return (
-          <button
-            key={step}
-            type="button"
-            onClick={() => onChange(step)}
-            className="p-0.5"
-            aria-label={`${step} stars`}
-            title={`${step} stars`}
-          >
-            <svg
-              width={size}
-              height={size}
-              viewBox="0 0 24 24"
-              className={filled ? "text-yellow-500" : "text-neutral-300"}
-              style={{ display: "block" }}
-            >
-              {/* base star outline */}
-              <path
-                fill={filled ? "currentColor" : "none"}
-                stroke="currentColor"
-                strokeWidth="1.5"
-                d="M12 3.75l2.62 5.31 5.86.85-4.24 4.13 1 5.82L12 17.98 6.76 19.86l1-5.82-4.24-4.13 5.86-.85L12 3.75z"
-              />
-              {/* half overlay when selecting halves from the left */}
-              {half && (
-                <clipPath id={`half-${step}`}>
-                  <rect x="0" y="0" width="12" height="24" />
-                </clipPath>
-              )}
-              {half && (
-                <path
-                  clipPath={`url(#half-${step})`}
-                  fill="currentColor"
-                  d="M12 3.75l2.62 5.31 5.86.85-4.24 4.13 1 5.82L12 17.98 6.76 19.86l1-5.82-4.24-4.13 5.86-.85L12 3.75z"
-                />
-              )}
-            </svg>
-          </button>
+          <span key={i} className="relative inline-block w-4 h-4 mr-0.5">
+            <StarOutline />
+            {filled && <StarFill />}
+            {showHalf && <StarHalf idSuffix={`${uid}-${i}`} />}
+          </span>
         );
       })}
     </div>
+  );
+}
+
+/* ---------- Interactive star rating ---------- */
+
+export function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  function handleClick(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const v = Math.max(0.5, Math.min(5, Math.round(pct * 10) / 2));
+    onChange(v);
+  }
+
+  return (
+    <div
+      className="inline-flex items-center cursor-pointer select-none"
+      onClick={handleClick}
+      role="slider"
+      tabIndex={0}
+      aria-valuemin={0.5}
+      aria-valuemax={5}
+      aria-valuenow={value}
+      aria-label="Rating"
+      onKeyDown={(e) => {
+        if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+          e.preventDefault();
+          onChange(Math.min(5, value + 0.5));
+        } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+          e.preventDefault();
+          onChange(Math.max(0.5, value - 0.5));
+        }
+      }}
+    >
+      <StarsDisplay value={value} />
+      <span className="ml-2 text-sm text-text-secondary">{value.toFixed(1)}</span>
+    </div>
+  );
+}
+
+/* ---------- SVG primitives ---------- */
+
+function StarOutline() {
+  return (
+    <svg viewBox="0 0 24 24" className="absolute inset-0 text-border" fill="none" stroke="currentColor" strokeWidth="1.2">
+      <path d="M12 17.27 18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z" />
+    </svg>
+  );
+}
+
+function StarFill() {
+  return (
+    <svg viewBox="0 0 24 24" className="absolute inset-0 text-star" fill="currentColor">
+      <path d="M12 17.27 18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z" />
+    </svg>
+  );
+}
+
+function StarHalf({ idSuffix }: { idSuffix: string }) {
+  const gradId = `half-grad-${idSuffix}`;
+  return (
+    <svg viewBox="0 0 24 24" className="absolute inset-0">
+      <defs>
+        <linearGradient id={gradId} x1="0" x2="1">
+          <stop offset="50%" stopColor="var(--color-star)" />
+          <stop offset="50%" stopColor="transparent" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M12 17.27 18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"
+        fill={`url(#${gradId})`}
+        stroke="var(--color-star)"
+      />
+    </svg>
   );
 }
