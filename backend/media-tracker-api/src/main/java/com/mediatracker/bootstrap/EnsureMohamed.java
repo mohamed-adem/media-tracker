@@ -8,9 +8,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@Lazy(false)
 public class EnsureMohamed {
   private final UserRepository users;
   private final PasswordEncoder encoder;

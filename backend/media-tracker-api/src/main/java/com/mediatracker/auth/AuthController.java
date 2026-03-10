@@ -34,13 +34,12 @@ public class AuthController {
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest req) {
         AuthResponse response = auth.register(req);
 
-        User mo = userRepository.findByEmailIgnoreCase(moEmail)
-            .orElseThrow(() -> new IllegalStateException("Seed user not found: " + moEmail));
-
-        User newUser = userRepository.findByEmailIgnoreCase(req.email())
-            .orElseThrow(() -> new IllegalStateException("New user not found after register"));
-
-        friendService.linkBoth(newUser.getId(), mo.getId());
+        // Auto-friend with seed user — skip gracefully if seed user doesn't exist
+        userRepository.findByEmailIgnoreCase(moEmail).ifPresent(mo -> {
+            userRepository.findByEmailIgnoreCase(req.email()).ifPresent(newUser -> {
+                friendService.linkBoth(newUser.getId(), mo.getId());
+            });
+        });
 
         return ResponseEntity.ok(response);
     }

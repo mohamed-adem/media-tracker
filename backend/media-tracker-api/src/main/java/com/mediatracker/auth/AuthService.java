@@ -21,7 +21,7 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest req) {
-        users.findByEmail(req.email()).ifPresent(u -> {
+        users.findByEmailIgnoreCase(req.email()).ifPresent(u -> {
             throw new IllegalArgumentException("Email already registered");
         });
         User u = new User();

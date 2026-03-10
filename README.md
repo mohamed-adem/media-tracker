@@ -1,11 +1,11 @@
 # 🎬 Media Tracker
 
-Track movies, shows, games, and books — all in one place.  
-Rate, review, and follow your friends’ activity in real time.  
+**Track movies, shows, games, and books — all in one place.**  
+Rate, review, and follow your friends’ activity in real time.
 
 ![Media Tracker preview](frontend/public/preview.png)
 
-Live demo: **[media-tracker-z9lf.vercel.app](https://media-tracker-z9lf.vercel.app/)**  
+### 🚀 Live Demo: **[media-tracker-z9lf.vercel.app](https://media-tracker-z9lf.vercel.app/)**
 
 ---
 
@@ -14,114 +14,113 @@ Live demo: **[media-tracker-z9lf.vercel.app](https://media-tracker-z9lf.vercel.a
 ![Next.js](https://img.shields.io/badge/Next.js-15-black)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
----
+## ✨ Key Features
 
-## ✨ Features
+### **Social**
+- 👥 **Friends System** — Add friends, view profiles, and see their reviews in your feed. New users are automatically friends with the admin ("Mohamed") to see content immediately.
+- � **Activity Feed** — Real-time updates when friends rate or review content.
 
-**Social**
-- 👥 Friends system — add friends and see their reviews in your feed  
-- 🧑‍💻 Auto-seeded admin account (“Mohamed”) for first-time users  
+### **Media Management**
+- ⭐ **Universal Rating System** — Review movies, TV shows, video games, and books with a consistent 5-star scale.
+- 🔎 **Smart Search** — Unified search powered by multiple external APIs:
+    - **TMDB** (Movies & TV)
+    - **RAWG** (Video Games)
+    - **Google Books / OpenLibrary** (Books)
 
-**Media Management**
-- ⭐ Rate and review movies, shows, games, and books  
-- 🔎 Smart autocomplete search (TMDB, RAWG, Google Books/OpenLibrary)
-
-**Technical**
-- 🔐 JWT authentication (access + refresh)  
-- ⚡ Redis caching for faster search and feed loading  
-- 🐘 PostgreSQL + Flyway migrations  
-- 🐳 Docker-ready for local or production use  
+### **Technical Highlights**
+- 🔐 **Stateless Authentication** — Secure JWT implementation (Access + Refresh tokens).
+- ⚡ **Performance Optimized** — Redis caching for API responses and feed generation.
+- 🐘 **Robust Persistence** — PostgreSQL with Flyway for versioned database migrations.
+- 🕒 **Keep-Alive Architecture** — Automated GitHub Action prevents free-tier server sleep.
 
 ---
 
 ## 🛠️ Tech Stack
 
-**Backend**
-- Java 21 + Spring Boot 3.5  
-- Spring Security (JWT, BCrypt)  
-- PostgreSQL (persistence)  
-- Redis (caching)  
-- Flyway (DB migrations)  
-- Docker-ready (Gradle multi-stage build)
+### **Backend**
+- **Language:** Java 21 (Eclipse Temurin)
+- **Framework:** Spring Boot 3.5
+- **Database:** PostgreSQL
+- **Caching:** Redis
+- **Security:** Spring Security, IO JSON Web Token (jjwt), BCrypt
+- **Build Tool:** Gradle (Kotlin DSL)
+- **Containerization:** Docker (Multi-stage build)
 
-**Frontend**
-- Next.js 15 (React 19 + TypeScript)  
-- TailwindCSS 4  
-- Vercel for hosting  
-
-**APIs Integrated**
-- TMDB (movies/shows)  
-- RAWG (games)  
-- Google Books / OpenLibrary (books)
+### **Frontend**
+- **Framework:** Next.js 15 (App Router)
+- **Language:** TypeScript
+- **Styling:** TailwindCSS 4
+- **State/Fetching:** SWR
 
 ---
 
-## ⚙️ Setup (Development)
+## ⚙️ Configuration (Environment Variables)
+
+The application requires the following environment variables.
+
+### **Backend (`application.yml` / Render Environment)**
+
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `SPRING_DATASOURCE_URL` | JDBC Connection String | `jdbc:postgresql://host:5432/db?sslmode=require` |
+| `SPRING_DATASOURCE_USERNAME` | Database User | `postgres` |
+| `SPRING_DATASOURCE_PASSWORD` | Database Password | `securePassword` |
+| `SPRING_DATA_REDIS_HOST` | Redis Host | `red-xxxx.render.com` |
+| `JWT_SECRET` | Secret for signing tokens (32+ chars) | `mySuperSecretKey123!` |
+| `TMDB_API_KEY` | API Key from The Movie DB | `eyJ...` |
+| `RAWG_API_KEY` | API Key from RAWG.io | `4daa...` |
+| `APP_SEED_MOHAMEDEMAIL` | Email for default admin user | `admin@example.com` |
+| `APP_SEED_MOHAMEDPASSWORD` | Password for default admin | `AdminPass123` |
+
+### **Frontend (`.env.local`)**
+
+| Variable | Description |
+| :--- | :--- |
+| `NEXT_PUBLIC_API_URL` | URL of the backend API (e.g., `https://media-tracker-api.onrender.com`) |
+
+---
+
+## 🚀 Getting Started
+
+### **Option 1: Docker Compose (Recommended)**
+Run the entire stack (Database, Redis, Backend) locally.
 
 ```bash
-# Backend
-cd backend/media-tracker-api
-./gradlew bootRun
+docker compose up --build
+```
+*   Backend: [http://localhost:8080](http://localhost:8080)
+*   Frontend: [http://localhost:3000](http://localhost:3000)
 
-# Frontend
+### **Option 2: Manual Setup**
+
+**1. Backend**
+```bash
+cd backend/media-tracker-api
+# Ensure PostgreSQL and Redis are running locally
+./gradlew bootRun
+```
+
+**2. Frontend**
+```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-Create a `.env` file in each directory with the following:
-
-```
-JWT_SECRET=your_secret
-POSTGRES_URL=your_url
-REDIS_URL=your_url
-TMDB_API_KEY=your_key
-RAWG_API_KEY=your_key
-```
-
 ---
 
-## 🐳 Run with Docker
+## 🌐 Deployment Architecture
 
-```bash
-docker compose up --build
-```
+The project is deployed using a modern CI/CD approach:
 
-App will be available at:
-- Frontend → http://localhost:3000  
-- Backend → http://localhost:8080  
+1.  **Backend (Render):**
+    - Deployed via Docker container.
+    - Optimized for free tier (Lazy Initialization enabled).
+    - **Auto-Ping:** A GitHub Action (`keep-alive.yml`) pings `/api/health` every 14 minutes to prevent the instance from spinning down.
 
----
-
-## 🌐 Deployment
-
-- **Backend** → Render (Dockerized Spring Boot API)  
-- **Frontend** → Vercel (Next.js app)  
-- Environment variables configure API URLs, DB credentials, JWT secrets, and external API keys.  
-
----
-
-## 📂 Repository Structure
-
-```
-.
-├── backend/               # Spring Boot API
-│   └── media-tracker-api/
-└── frontend/              # Next.js app
-```
-
----
-
-## 📌 API Overview
-
-- `POST /api/auth/register` → register new user  
-- `POST /api/auth/login` → log in and get tokens  
-- `GET /api/health` → health check  
-- `GET /api/search?kind=MOVIE|SHOW|GAME|BOOK&q=...` → search external APIs  
-- `POST /api/reviews` → add a review (auth)  
-- `GET /api/feed` → see friends’ activity (auth)  
-- `GET /api/friends` → manage friends (auth)  
-- `GET /api/users/me` → get current user info (auth)  
+2.  **Frontend (Vercel):**
+    - Connects to the Render backend via `NEXT_PUBLIC_API_URL`.
+    - Automatic deployments on Git push.
 
 ---
 
