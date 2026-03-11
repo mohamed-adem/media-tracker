@@ -41,22 +41,6 @@ public class UsersController {
         return userToMap(u);
     }
 
-    @GetMapping("/search")
-    public List<Map<String, Object>> search(@RequestParam("q") String q, Authentication auth) {
-        UUID userId = (UUID) auth.getPrincipal();
-        return users.findAll().stream()
-            .filter(u -> !u.getId().equals(userId))
-            .filter(u ->
-                u.getDisplayName().toLowerCase().contains(q.toLowerCase()) ||
-                u.getEmail().toLowerCase().contains(q.toLowerCase()))
-            .limit(20)
-            .map(u -> Map.<String, Object>of(
-                "id", u.getId(),
-                "displayName", u.getDisplayName(),
-                "email", u.getEmail()))
-            .toList();
-    }
-
     private Map<String, Object> userToMap(User u) {
         Map<String, Object> m = new HashMap<>();
         m.put("id", u.getId());
