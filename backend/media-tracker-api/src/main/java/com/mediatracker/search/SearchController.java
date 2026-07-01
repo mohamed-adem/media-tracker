@@ -5,6 +5,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.server.ResponseStatusException;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @RestController
 @RequestMapping("/api/search")
@@ -12,10 +18,16 @@ public class SearchController {
 
     private final ExternalSearchService svc;
     private final ExternalApiProps props;
+    private final Executor providerSearchExecutor;
 
-    public SearchController(ExternalSearchService svc, ExternalApiProps props) {
+    public SearchController(
+        ExternalSearchService svc,
+        ExternalApiProps props,
+        @Qualifier("providerSearchExecutor") Executor providerSearchExecutor
+    ) {
         this.svc = svc;
         this.props = props;
+        this.providerSearchExecutor = providerSearchExecutor;
     }
 
     @GetMapping
@@ -33,18 +45,18 @@ public class SearchController {
             case "GAME"  -> svc.searchGames(q, lim, props.getRawg().getApiKey());
             case "BOOK"  -> svc.searchBooks(q, lim);
             case "ALL" -> {
+                int each = Math.max(1, (lim + 3) / 4);
+                List<CompletableFuture<List<SearchItem>>> searches = List.of(
+                    CompletableFuture.supplyAsync(() -> svc.searchMovies(q, each), providerSearchExecutor),
+                    CompletableFuture.supplyAsync(() -> svc.searchShows(q, each), providerSearchExecutor),
+                    CompletableFuture.supplyAsync(() -> svc.searchGames(q, each, props.getRawg().getApiKey()), providerSearchExecutor),
+                    CompletableFuture.supplyAsync(() -> svc.searchBooks(q, each), providerSearchExecutor)
+                );
                 List<SearchItem> out = new ArrayList<>();
-                int each = Math.max(1, lim / 4);
-                out.addAll(svc.searchMovies(q, each));
-                out.addAll(svc.searchShows(q, each));
-                out.addAll(svc.searchGames(q, each, props.getRawg().getApiKey()));
-                out.addAll(svc.searchBooks(q, each));
-                if (out.size() > lim) {
-                    out = out.subList(0, lim);
-                }
-                yield out;
+                searches.forEach(search -> out.addAll(search.join()));
+                yield out.stream().limit(lim).toList();
             }
-            default -> svc.searchMovies(q, lim);
+            default -> throw new ResponseStatusException(BAD_REQUEST, "Unsupported media kind");
         };
     }
 }

@@ -1,9 +1,14 @@
 package com.mediatracker.search;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.util.retry.Retry;
 
 import java.time.LocalDate;
+import java.time.Duration;
 import java.util.*;
 
 
@@ -23,61 +28,53 @@ public class ExternalSearchService {
     }
 
 
+    @Cacheable(cacheNames = "provider-search", key = "'movie:' + #q.trim().toLowerCase() + ':' + #limit", sync = true)
     public List<SearchItem> searchMovies(String q, int limit) {
         if (q == null || q.isBlank()) return List.of();
-        Map<?, ?> body = tmdb.get()
+        Map<?, ?> body = fetch(tmdb.get()
                 .uri(uri -> uri.path("/search/movie")
                         .queryParam("query", q)
                         .queryParam("include_adult", "false")
-                        .build())
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
+                        .build()));
 
         return mapTmdbMovieResults(body, limit);
     }
 
 
+    @Cacheable(cacheNames = "provider-search", key = "'show:' + #q.trim().toLowerCase() + ':' + #limit", sync = true)
     public List<SearchItem> searchShows(String q, int limit) {
         if (q == null || q.isBlank()) return List.of();
-        Map<?, ?> body = tmdb.get()
+        Map<?, ?> body = fetch(tmdb.get()
                 .uri(uri -> uri.path("/search/tv")
                         .queryParam("query", q)
-                        .build())
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
+                        .build()));
 
         return mapTmdbTvResults(body, limit);
     }
 
 
+    @Cacheable(cacheNames = "provider-search", key = "'game:' + #q.trim().toLowerCase() + ':' + #limit", sync = true)
     public List<SearchItem> searchGames(String q, int limit, String apiKey) {
         if (q == null || q.isBlank()) return List.of();
-        Map<?, ?> body = rawg.get()
+        Map<?, ?> body = fetch(rawg.get()
                 .uri(uri -> uri.path("/games")
                         .queryParam("key", apiKey)
                         .queryParam("search", q)
                         .queryParam("page_size", clamp(limit, 1, 20))
-                        .build())
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
+                        .build()));
 
         return mapRawgGameResults(body, limit);
     }
 
 
+    @Cacheable(cacheNames = "provider-search", key = "'book:' + #q.trim().toLowerCase() + ':' + #limit", sync = true)
     public List<SearchItem> searchBooks(String q, int limit) {
         if (q == null || q.isBlank()) return List.of();
-        Map<?, ?> body = openLibrary.get()
+        Map<?, ?> body = fetch(openLibrary.get()
                 .uri(uri -> uri.path("/search.json")
                         .queryParam("q", q)
                         .queryParam("limit", clamp(limit, 1, 20))
-                        .build())
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
+                        .build()));
 
         return mapOpenLibraryResults(body, limit);
     }
@@ -185,5 +182,27 @@ public class ExternalSearchService {
 
     private int clamp(int n, int min, int max) {
         return Math.max(min, Math.min(max, n));
+    }
+
+    private Map<?, ?> fetch(WebClient.RequestHeadersSpec<?> request) {
+        try {
+            return request.retrieve()
+                .bodyToMono(Map.class)
+                .timeout(Duration.ofSeconds(4))
+                .retryWhen(Retry.backoff(1, Duration.ofMillis(150))
+                    .maxBackoff(Duration.ofMillis(750))
+                    .filter(this::retryable))
+                .block();
+        } catch (RuntimeException ignored) {
+            return Map.of();
+        }
+    }
+
+    private boolean retryable(Throwable error) {
+        if (error instanceof WebClientRequestException) return true;
+        if (error instanceof WebClientResponseException response) {
+            return response.getStatusCode().is5xxServerError() || response.getStatusCode().value() == 429;
+        }
+        return error instanceof java.util.concurrent.TimeoutException;
     }
 }

@@ -9,6 +9,7 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
     properties:
@@ -17,9 +18,13 @@ spring:
   flyway:
     enabled: true
   cache:
-    type: redis
+    type: ${CACHE_TYPE:redis}
+    redis:
+      time-to-live: 15m
   data:
     redis:
+      repositories:
+        enabled: false
       host: ${SPRING_DATA_REDIS_HOST:localhost}
       port: ${SPRING_DATA_REDIS_PORT:6379}
 app:
@@ -28,10 +33,11 @@ app:
     expirationSeconds: 3600
     refreshExpirationSeconds: 1209600
   seed:
-    mohamedEmail: "${APP_SEED_MOHAMEDEMAIL:mohamed@example.com}"
+    enabled: ${APP_SEED_ENABLED:false}
+    mohamedEmail: "${APP_SEED_MOHAMEDEMAIL:}"
     mohamedDisplayName: "${APP_SEED_MOHAMEDISPLAYNAME:Mohamed}"
-    mohamedPassword: "${APP_SEED_MOHAMEDPASSWORD:StrongPass}"
-    resetOnStart: true
+    mohamedPassword: "${APP_SEED_MOHAMEDPASSWORD:}"
+    resetOnStart: ${APP_SEED_RESET_ON_START:false}
 logging:
   level:
     org.springframework.security: INFO

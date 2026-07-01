@@ -81,9 +81,14 @@ public class SecurityConfig {
                 ).permitAll()
 
                 .requestMatchers("/api/reviews/**").hasAnyRole("USER","ADMIN")
+                .requestMatchers("/api/library/**").hasAnyRole("USER","ADMIN")
                 .requestMatchers("/api/friends/**").hasAnyRole("USER","ADMIN")
                 .requestMatchers("/api/feed/**").hasAnyRole("USER","ADMIN")
                 .requestMatchers("/api/users/**").hasAnyRole("USER","ADMIN")
+                .requestMatchers("/api/lists/**").hasAnyRole("USER","ADMIN")
+                .requestMatchers("/api/notifications/**").hasAnyRole("USER","ADMIN")
+                .requestMatchers("/api/recommendations/**").hasAnyRole("USER","ADMIN")
+                .requestMatchers("/api/media/**").hasAnyRole("USER","ADMIN")
 
                 .anyRequest().authenticated()
             )

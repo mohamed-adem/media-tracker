@@ -10,9 +10,11 @@ import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 @Component
 @Lazy(false)
+@ConditionalOnProperty(prefix = "app.seed", name = "enabled", havingValue = "true")
 public class EnsureMohamed {
   private final UserRepository users;
   private final PasswordEncoder encoder;
@@ -35,6 +37,9 @@ public class EnsureMohamed {
   @PostConstruct
   @Transactional
   public void init() {
+    if (password == null || password.length() < 12) {
+      throw new IllegalStateException("Seed admin password must contain at least 12 characters");
+    }
     System.out.println("EnsureMohamed: Starting seeder...");
     System.out.println("EnsureMohamed: Configured Email = " + email);
     System.out.println("EnsureMohamed: Configured DisplayName = " + displayName);

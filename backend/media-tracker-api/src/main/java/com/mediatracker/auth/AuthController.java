@@ -3,6 +3,7 @@ package com.mediatracker.auth;
 import com.mediatracker.auth.dto.AuthResponse;
 import com.mediatracker.auth.dto.LoginRequest;
 import com.mediatracker.auth.dto.RegisterRequest;
+import com.mediatracker.auth.dto.RefreshRequest;
 import com.mediatracker.friend.FriendService;
 import com.mediatracker.user.User;
 import com.mediatracker.user.UserRepository;
@@ -47,5 +48,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest req) {
         return ResponseEntity.ok(auth.login(req));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshRequest req) {
+        return ResponseEntity.ok(auth.refresh(req.refreshToken()));
     }
 }

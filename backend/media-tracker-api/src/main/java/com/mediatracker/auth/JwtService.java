@@ -11,6 +11,7 @@ import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class JwtService {
@@ -48,6 +49,7 @@ public class JwtService {
         return Jwts.builder()
                 .setSubject(u.getId().toString())
                 .addClaims(Map.of("typ", "refresh"))
+                .setId(UUID.randomUUID().toString())
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusSeconds(refreshTtlSeconds)))
                 .signWith(key(), SignatureAlgorithm.HS256)

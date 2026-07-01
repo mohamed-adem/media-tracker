@@ -39,20 +39,36 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     String token = header.substring(7);
-    Claims claims = jwtService.parseAccessToken(token);
+    Claims claims;
+    try {
+      claims = jwtService.parseAccessToken(token);
+    } catch (RuntimeException ex) {
+      res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired access token");
+      return;
+    }
 
-    String sub  = claims.getSubject();                
-    String role = claims.get("role", String.class);    
-    if (sub == null || role == null) { chain.doFilter(req, res); return; }
+    String sub = claims.getSubject();
+    if (sub == null) {
+      res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid access token subject");
+      return;
+    }
 
     UUID userId;
-    try { userId = UUID.fromString(sub); } catch (Exception e) { chain.doFilter(req, res); return; }
+    try {
+      userId = UUID.fromString(sub);
+    } catch (IllegalArgumentException ex) {
+      res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid access token subject");
+      return;
+    }
 
     User u = userRepo.findById(userId).orElse(null);
-    if (u == null) { chain.doFilter(req, res); return; }
+    if (u == null) {
+      res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User no longer exists");
+      return;
+    }
 
     var auth = new UsernamePasswordAuthenticationToken(
-        userId, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)) 
+        userId, null, List.of(new SimpleGrantedAuthority("ROLE_" + u.getRole().name()))
     );
     SecurityContextHolder.getContext().setAuthentication(auth);
 

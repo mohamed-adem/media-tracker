@@ -8,6 +8,9 @@ import com.mediatracker.user.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Locale;
+import java.util.UUID;
+
 @Service
 public class AuthService {
     private final UserRepository users;
@@ -21,12 +24,13 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest req) {
-        users.findByEmailIgnoreCase(req.email()).ifPresent(u -> {
+        String email = req.email().trim().toLowerCase(Locale.ROOT);
+        users.findByEmailIgnoreCase(email).ifPresent(u -> {
             throw new IllegalArgumentException("Email already registered");
         });
         User u = new User();
-        u.setEmail(req.email());
-        u.setDisplayName(req.displayName());
+        u.setEmail(email);
+        u.setDisplayName(req.displayName().trim());
         u.setPasswordHash(encoder.encode(req.password()));
         users.save(u);
 
@@ -36,7 +40,7 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest req) {
-        var u = users.findByEmailIgnoreCase(req.email())
+        var u = users.findByEmailIgnoreCase(req.email().trim())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
         if (!encoder.matches(req.password(), u.getPasswordHash())) {
             throw new IllegalArgumentException("Invalid credentials");
@@ -44,5 +48,19 @@ public class AuthService {
         var access = jwt.generateAccessToken(u);
         var refresh = jwt.generateRefreshToken(u);
         return new AuthResponse(access, refresh);
+    }
+
+    public AuthResponse refresh(String refreshToken) {
+        var claims = jwt.parseRefreshToken(refreshToken);
+        UUID userId;
+        try {
+            userId = UUID.fromString(claims.getSubject());
+        } catch (RuntimeException ex) {
+            throw new IllegalArgumentException("Invalid refresh token");
+        }
+
+        var user = users.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+        return new AuthResponse(jwt.generateAccessToken(user), jwt.generateRefreshToken(user));
     }
 }
