@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.OffsetDateTime;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -26,7 +27,7 @@ public class Review {
     private MediaItem media;
 
     @Column(name = "rating", nullable = false)
-    private Short rating; 
+    private BigDecimal rating;
 
     @Column(name = "body", columnDefinition = "text")
     private String body;
@@ -34,13 +35,19 @@ public class Review {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
 
     @PrePersist
     public void onCreate() {
-        if (createdAt == null) {
-            createdAt = OffsetDateTime.now();
-        }
+        OffsetDateTime now = OffsetDateTime.now();
+        if (createdAt == null) createdAt = now;
+        updatedAt = now;
     }
+
+    @PreUpdate
+    public void onUpdate() { updatedAt = OffsetDateTime.now(); }
 
 
     public UUID getId() { return id; }
@@ -52,12 +59,13 @@ public class Review {
     public MediaItem getMedia() { return media; }
     public void setMedia(MediaItem media) { this.media = media; }
 
-    public Short getRating() { return rating; }
-    public void setRating(Short rating) { this.rating = rating; }
+    public BigDecimal getRating() { return rating; }
+    public void setRating(BigDecimal rating) { this.rating = rating; }
 
     public String getBody() { return body; }
     public void setBody(String body) { this.body = body; }
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+    public OffsetDateTime getUpdatedAt() { return updatedAt; }
 }

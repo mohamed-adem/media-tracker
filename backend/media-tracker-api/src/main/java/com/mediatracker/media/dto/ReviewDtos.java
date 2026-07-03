@@ -4,6 +4,7 @@ import com.mediatracker.media.MediaKind;
 import jakarta.validation.constraints.*;
 
 import java.time.OffsetDateTime;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public class ReviewDtos {
@@ -13,7 +14,7 @@ public class ReviewDtos {
       String externalId,
       @NotBlank String title,
       Integer year,
-      @Min(1) @Max(5) int rating,
+      @NotNull @DecimalMin("0.5") @DecimalMax("5.0") @Digits(integer = 1, fraction = 1) BigDecimal rating,
       @Size(max = 4000) String body,
       String posterUrl
   ) {}
@@ -22,7 +23,7 @@ public class ReviewDtos {
       UUID id,
       UUID mediaId,
       String title,
-      int rating,
+      BigDecimal rating,
       String body,
       MediaKind kind,
       Integer year,

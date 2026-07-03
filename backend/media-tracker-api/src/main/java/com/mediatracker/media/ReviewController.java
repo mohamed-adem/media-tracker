@@ -1,5 +1,6 @@
 package com.mediatracker.media;
 
+import com.mediatracker.library.LibraryEntryService;
 import com.mediatracker.media.dto.ReviewDtos;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
@@ -12,46 +13,32 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/reviews")
 public class ReviewController {
-  private final MediaItemRepository mediaRepo;
   private final ReviewRepository reviewRepo;
+  private final MediaItemService mediaItems;
+  private final LibraryEntryService library;
+  private final ReviewService reviewService;
 
-  public ReviewController(MediaItemRepository mediaRepo, ReviewRepository reviewRepo) {
-    this.mediaRepo = mediaRepo;
+  public ReviewController(
+      ReviewRepository reviewRepo,
+      MediaItemService mediaItems,
+      LibraryEntryService library,
+      ReviewService reviewService
+  ) {
     this.reviewRepo = reviewRepo;
+    this.mediaItems = mediaItems;
+    this.library = library;
+    this.reviewService = reviewService;
   }
 
   @PostMapping
   @Transactional
   public ReviewDtos.View upsert(@Valid @RequestBody ReviewDtos.Upsert req, Authentication auth) {
     UUID userId = UUID.fromString(auth.getName());
-
-    MediaItem media =
-        (req.externalId() != null && !req.externalId().isBlank())
-            ? mediaRepo.findByKindAndExternalId(req.kind(), req.externalId())
-                .orElseGet(() -> {
-                  MediaItem mi = new MediaItem();
-                  mi.setKind(req.kind());
-                  mi.setExternalId(req.externalId());
-                  mi.setTitle(req.title());
-                  mi.setYear(req.year());
-                  mi.setPosterUrl(req.posterUrl()); // <— persist poster if supplied
-                  return mediaRepo.save(mi);
-                })
-            : createBare(req);
-
-    // If we previously created media without poster but we have one now, backfill
-    if (media.getPosterUrl() == null && req.posterUrl() != null && !req.posterUrl().isBlank()) {
-      media.setPosterUrl(req.posterUrl());
-      mediaRepo.save(media);
-    }
-
-    var existing = reviewRepo.findByUserIdAndMedia_Id(userId, media.getId()).orElse(null);
-    Review rv = (existing != null) ? existing : new Review();
-    rv.setUserId(userId);
-    rv.setMedia(media);
-    rv.setRating((short) req.rating());
-    rv.setBody(req.body());
-    var saved = reviewRepo.save(rv);
+    MediaItem media = mediaItems.resolve(
+        req.kind(), req.externalId(), req.title(), req.year(), req.posterUrl()
+    );
+    Review saved = reviewService.upsert(userId, media, req.rating(), req.body());
+    library.ensureCompleted(userId, media);
 
     return new ReviewDtos.View(
         saved.getId(),
@@ -67,9 +54,10 @@ public class ReviewController {
   }
 
   @GetMapping("/me")
+  @Transactional(readOnly = true)
   public List<ReviewDtos.View> myReviews(Authentication auth) {
     UUID userId = UUID.fromString(auth.getName());
-    return reviewRepo.findByUserIdOrderByCreatedAtDesc(userId).stream()
+    return reviewRepo.findByUserIdOrderByUpdatedAtDesc(userId).stream()
         .map(rv -> new ReviewDtos.View(
             rv.getId(),
             rv.getMedia().getId(),
@@ -79,21 +67,8 @@ public class ReviewController {
             rv.getMedia().getKind(),
             rv.getMedia().getYear(),
             rv.getMedia().getPosterUrl(),
-            rv.getCreatedAt()))
+            rv.getUpdatedAt()))
         .toList();
   }
 
-  private MediaItem createBare(ReviewDtos.Upsert req) {
-    MediaItem mi = new MediaItem();
-    mi.setKind(req.kind());
-    mi.setTitle(req.title());
-    mi.setYear(req.year());
-    mi.setPosterUrl(req.posterUrl()); // <— capture if provided
-    return mediaRepo.save(mi);
-  }
-
-  @PostMapping("/_ping")
-  public String ping(org.springframework.security.core.Authentication a) {
-    return "ok " + a.getName();
-  }
 }
