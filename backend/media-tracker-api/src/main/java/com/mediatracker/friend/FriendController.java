@@ -2,6 +2,7 @@ package com.mediatracker.friend;
 
 import com.mediatracker.user.User;
 import com.mediatracker.user.UserRepository;
+import com.mediatracker.notification.NotificationService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,10 +16,12 @@ public class FriendController {
 
     private final FriendRepository friends;
     private final UserRepository users;
+    private final NotificationService notifications;
 
-    public FriendController(FriendRepository friends, UserRepository users) {
+    public FriendController(FriendRepository friends, UserRepository users, NotificationService notifications) {
         this.friends = friends;
         this.users = users;
+        this.notifications = notifications;
     }
 
     public record FriendView(
@@ -105,13 +108,19 @@ public class FriendController {
         if (myId.equals(friendId)) {
             throw new IllegalArgumentException("Cannot friend yourself");
         }
+        if (!users.existsById(friendId)) {
+            throw new IllegalArgumentException("User not found");
+        }
         var existing = friends.findByIdUserIdAndIdFriendId(myId, friendId).orElse(null);
         if (existing != null) return existing;
 
         Friend f = new Friend();
         f.setId(new FriendId(myId, friendId));
         f.setStatus(FriendStatus.PENDING);
-        return friends.save(f);
+        Friend saved = friends.save(f);
+        String actorName = users.findById(myId).map(User::getDisplayName).orElse("Someone");
+        notifications.friendRequest(friendId, myId, actorName);
+        return saved;
     }
 
     @PostMapping("/{friendId}/accept")
@@ -132,7 +141,10 @@ public class FriendController {
             reciprocal.setId(new FriendId(myId, friendId));
         }
         reciprocal.setStatus(FriendStatus.ACCEPTED);
-        return friends.save(reciprocal);
+        Friend saved = friends.save(reciprocal);
+        String actorName = users.findById(myId).map(User::getDisplayName).orElse("Someone");
+        notifications.friendAccepted(friendId, myId, actorName);
+        return saved;
     }
 
     @PostMapping("/{friendId}/decline")
