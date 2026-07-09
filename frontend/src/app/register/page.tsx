@@ -37,15 +37,25 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center p-6">
-      <div className="w-full max-w-sm animate-fade-in-up">
-        <div className="card-glass p-6 space-y-5">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-text-primary">Create account</h1>
-            <p className="text-sm text-text-secondary mt-1">Start tracking your media</p>
+    <div className="grid min-h-[68vh] items-stretch overflow-hidden rounded-[2rem] border border-ink/15 bg-bg-surface shadow-[0_24px_70px_rgba(49,42,32,0.12)] lg:grid-cols-2">
+      <div className="hidden bg-accent p-12 text-white lg:flex lg:flex-col lg:justify-between">
+        <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">Your media in one place</span>
+        <div>
+          <div className="font-serif text-5xl leading-none">Watch.<br />Play.<br />Read.<br />Remember.</div>
+        </div>
+        <p className="max-w-sm text-sm leading-6 text-white/70">Track progress, save ratings, write reviews, and share with friends.</p>
+      </div>
+      <div className="flex items-center justify-center px-6 py-14 sm:px-12">
+        <div className="w-full max-w-sm animate-fade-in-up space-y-7">
+          <div>
+            <p className="eyebrow">Create account</p>
+            <h1 className="mt-3 font-serif text-4xl text-text-primary">Start your library.</h1>
+            <p className="mt-2 text-sm text-text-secondary">Create an account, then add your first title.</p>
           </div>
 
-          <form onSubmit={submit} className="space-y-3">
+          <form onSubmit={submit} className="space-y-4">
+            <label className="block space-y-1.5 text-sm font-semibold">
+              <span>Display name</span>
             <input
               className="input"
               placeholder="Display name"
@@ -53,6 +63,9 @@ export default function RegisterPage() {
               onChange={(e) => setDisplayName(e.target.value)}
               required
             />
+            </label>
+            <label className="block space-y-1.5 text-sm font-semibold">
+              <span>Email</span>
             <input
               className="input"
               type="email"
@@ -61,14 +74,20 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
+            </label>
+            <label className="block space-y-1.5 text-sm font-semibold">
+              <span>Password</span>
             <input
               className="input"
               type="password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              minLength={8}
+              maxLength={72}
               required
             />
+            </label>
             {err && (
               <div className="text-sm text-danger bg-danger-muted rounded-lg px-3 py-2">
                 {err}
@@ -79,7 +98,7 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-text-secondary">
+          <p className="text-sm text-text-secondary">
             Already have an account?{" "}
             <Link href="/login" className="text-accent hover:underline">
               Log in

@@ -36,15 +36,26 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center p-6">
-      <div className="w-full max-w-sm animate-fade-in-up">
-        <div className="card-glass p-6 space-y-5">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-text-primary">Welcome back</h1>
-            <p className="text-sm text-text-secondary mt-1">Sign in to your account</p>
+    <div className="grid min-h-[68vh] items-stretch overflow-hidden rounded-[2rem] border border-ink/15 bg-bg-surface shadow-[0_24px_70px_rgba(49,42,32,0.12)] lg:grid-cols-2">
+      <div className="hidden bg-ink p-12 text-paper lg:flex lg:flex-col lg:justify-between">
+        <span className="eyebrow !text-[#f58b76]">Welcome back</span>
+        <div className="max-w-md">
+          <p className="font-serif text-4xl leading-tight">Pick up where you left off.</p>
+          <p className="mt-4 text-sm leading-6 text-paper/55">Your library, lists, reviews, and friend activity are tied to your account.</p>
+        </div>
+        <p className="text-sm text-paper/55">Movies · Shows · Games · Books</p>
+      </div>
+      <div className="flex items-center justify-center px-6 py-14 sm:px-12">
+        <div className="w-full max-w-sm animate-fade-in-up space-y-7">
+          <div>
+            <p className="eyebrow">Sign in</p>
+            <h1 className="mt-3 font-serif text-4xl text-text-primary">Log in to your library.</h1>
+            <p className="mt-2 text-sm text-text-secondary">Enter your email and password.</p>
           </div>
 
-          <form onSubmit={submit} className="space-y-3">
+          <form onSubmit={submit} className="space-y-4">
+            <label className="block space-y-1.5 text-sm font-semibold">
+              <span>Email</span>
             <input
               className="input"
               type="email"
@@ -53,6 +64,9 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
+            </label>
+            <label className="block space-y-1.5 text-sm font-semibold">
+              <span>Password</span>
             <input
               className="input"
               type="password"
@@ -61,6 +75,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            </label>
             {err && (
               <div className="text-sm text-danger bg-danger-muted rounded-lg px-3 py-2">
                 {err}
@@ -71,7 +86,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-text-secondary">
+          <p className="text-sm text-text-secondary">
             Don&apos;t have an account?{" "}
             <Link href="/register" className="text-accent hover:underline">
               Register

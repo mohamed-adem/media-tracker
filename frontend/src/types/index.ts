@@ -1,4 +1,5 @@
 export type MediaKind = "MOVIE" | "SHOW" | "GAME" | "BOOK";
+export type LibraryStatus = "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "PAUSED" | "DROPPED";
 
 export type Me = {
   id: string;
@@ -21,8 +22,29 @@ export type Review = {
   createdAt?: string;
 };
 
+export type LibraryEntry = {
+  id: string;
+  mediaId: string;
+  title: string;
+  kind: MediaKind;
+  year: number | null;
+  posterUrl: string | null;
+  status: LibraryStatus;
+  progressCurrent: number | null;
+  progressTotal: number | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  privateEntry: boolean;
+  createdAt: string;
+  updatedAt: string;
+  rating: number | null;
+  reviewBody: string | null;
+  reviewedAt: string | null;
+};
+
 export type FeedItem = {
   reviewId: string;
+  mediaId: string;
   authorId: string;
   author: string;
   title: string;
@@ -58,4 +80,59 @@ export type SearchItem = {
   title: string;
   year: number | null;
   posterUrl: string | null;
+};
+
+export type Recommendation = SearchItem & {
+  mediaId: string;
+  score: number;
+  reason: string;
+};
+
+export type FriendReview = {
+  reviewId: string;
+  authorId: string;
+  author: string;
+  rating: number;
+  body: string | null;
+  updatedAt: string;
+};
+
+export type MediaDetail = SearchItem & {
+  mediaId: string;
+  libraryEntry: LibraryEntry | null;
+  friendReviews: FriendReview[];
+};
+
+export type MediaListItem = SearchItem & {
+  id: string;
+  mediaId: string;
+  position: number;
+  note: string | null;
+  createdAt: string;
+};
+
+export type MediaList = {
+  id: string;
+  ownerId: string;
+  name: string;
+  description: string | null;
+  privateList: boolean;
+  createdAt: string;
+  updatedAt: string;
+  items: MediaListItem[];
+};
+
+export type NotificationItem = {
+  id: string;
+  actorId: string | null;
+  type: "FRIEND_REQUEST" | "FRIEND_ACCEPTED";
+  message: string;
+  targetPath: string | null;
+  readAt: string | null;
+  createdAt: string;
+};
+
+export type NotificationSummary = {
+  unreadCount: number;
+  notifications: NotificationItem[];
 };

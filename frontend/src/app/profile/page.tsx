@@ -7,14 +7,14 @@ import { logout } from "@/lib/auth";
 import { useRequireAuth } from "@/hooks/useAuth";
 import { ProfileHeaderSkeleton } from "@/app/components/LoadingSkeleton";
 import CollectionGrid from "@/app/components/CollectionGrid";
-import type { Me, Review } from "@/types";
+import type { LibraryEntry, Me } from "@/types";
 
 export default function ProfilePage() {
   const r = useRouter();
   const { loading: authLoading } = useRequireAuth();
 
   const [me, setMe] = useState<Me | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [entries, setEntries] = useState<LibraryEntry[]>([]);
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [saving, setSaving] = useState(false);
@@ -29,12 +29,12 @@ export default function ProfilePage() {
         setLoading(true);
         const [u, mine] = await Promise.all([
           apiFetch<Me>("/api/users/me"),
-          apiFetch<Review[]>("/api/reviews/me"),
+          apiFetch<LibraryEntry[]>("/api/library"),
         ]);
         setMe(u);
         setDisplayName(u.displayName);
         setBio(u.bio ?? "");
-        setReviews(mine);
+        setEntries(mine);
       } catch (e: unknown) {
         setErr(e instanceof Error ? e.message : "Failed to load profile");
       } finally {
@@ -46,19 +46,23 @@ export default function ProfilePage() {
   const stats = useMemo(() => {
     const counts = { MOVIE: 0, SHOW: 0, GAME: 0, BOOK: 0 };
     let ratingSum = 0;
-    for (const rv of reviews) {
-      if (rv.kind && rv.kind in counts) counts[rv.kind] += 1;
-      ratingSum += rv.rating;
+    let ratedCount = 0;
+    for (const entry of entries) {
+      if (entry.kind in counts) counts[entry.kind] += 1;
+      if (entry.rating != null) {
+        ratingSum += entry.rating;
+        ratedCount += 1;
+      }
     }
     return {
-      total: reviews.length,
-      avg: reviews.length ? (ratingSum / reviews.length).toFixed(1) : "0.0",
+      total: entries.length,
+      avg: ratedCount ? (ratingSum / ratedCount).toFixed(1) : "-",
       movies: counts.MOVIE,
       shows: counts.SHOW,
       games: counts.GAME,
       since: me?.createdAt ? new Date(me.createdAt).toLocaleDateString(undefined, { month: "short", year: "numeric" }) : "-",
     };
-  }, [reviews, me?.createdAt]);
+  }, [entries, me?.createdAt]);
 
   async function saveProfile(e: React.FormEvent) {
     e.preventDefault();
@@ -87,15 +91,20 @@ export default function ProfilePage() {
   if (authLoading) return null;
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="mx-auto max-w-6xl space-y-8 animate-fade-in-up">
+      <div className="border-b border-ink/15 pb-6">
+        <p className="eyebrow">Your corner</p>
+        <h1 className="mt-2 font-serif text-4xl sm:text-5xl">Profile and taste.</h1>
+        <p className="mt-2 text-sm text-text-secondary">Keep your identity simple; let the library do most of the talking.</p>
+      </div>
       {err && <div className="text-sm text-danger bg-danger-muted rounded-lg px-3 py-2">{err}</div>}
 
       {loading || !me ? (
         <ProfileHeaderSkeleton />
       ) : (
-        <form onSubmit={saveProfile} className="card-glass space-y-5">
-          <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center text-bg-base text-2xl font-bold flex-none">
+        <form onSubmit={saveProfile} className="card-dark space-y-5">
+          <div className="flex flex-col items-start gap-5 sm:flex-row">
+            <div className="flex h-20 w-20 flex-none items-center justify-center rounded-full bg-accent text-3xl font-bold text-white">
               {me.displayName.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 space-y-2">
@@ -106,23 +115,23 @@ export default function ProfilePage() {
                 maxLength={100}
                 required
               />
-              <div className="text-sm text-text-secondary">{me.email}</div>
+              <div className="text-sm text-paper/50">{me.email}</div>
               <textarea
-                className="input min-h-[88px]"
+                className="input min-h-[88px] !border-white/15 !bg-white/10 !text-paper placeholder:!text-paper/40"
                 placeholder="Add a short bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 maxLength={500}
               />
             </div>
-            <button className="btn" type="submit" disabled={saving || !displayName.trim()}>
+            <button className="btn !bg-paper !text-ink !shadow-none hover:!bg-accent hover:!text-white" type="submit" disabled={saving || !displayName.trim()}>
               {saving ? "Saving..." : "Save"}
             </button>
           </div>
         </form>
       )}
 
-      <section className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <StatCard label="Total" value={stats.total.toString()} />
         <StatCard label="Avg" value={stats.avg} />
         <StatCard label="Movies" value={stats.movies.toString()} />
@@ -131,12 +140,20 @@ export default function ProfilePage() {
         <StatCard label="Since" value={stats.since} />
       </section>
 
-      <section className="card-glass space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">All your reviews</h2>
-          <span className="text-xs text-text-tertiary">{reviews.length} items</span>
+      <section className="space-y-5">
+        <div className="rule-title">
+          <div>
+            <p className="eyebrow">Collected</p>
+            <h2 className="mt-1 font-serif text-3xl">Your full library</h2>
+          </div>
+          <span className="text-xs text-text-tertiary">{entries.length} items</span>
         </div>
-        <CollectionGrid reviews={reviews} loading={loading} />
+        <CollectionGrid
+          entries={entries}
+          loading={loading}
+          onEntryUpdated={(updated) => setEntries((previous) => previous.map((entry) => entry.id === updated.id ? updated : entry))}
+          onEntryDeleted={(entryId) => setEntries((previous) => previous.filter((entry) => entry.id !== entryId))}
+        />
       </section>
 
       <div className="flex justify-center">
@@ -150,9 +167,9 @@ export default function ProfilePage() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="card-glass">
-      <div className="text-xs text-text-tertiary">{label}</div>
-      <div className="mt-1 text-2xl font-bold text-text-primary">{value}</div>
+    <div className="card !p-4">
+      <div className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">{label}</div>
+      <div className="mt-1 font-serif text-3xl text-text-primary">{value}</div>
     </div>
   );
 }

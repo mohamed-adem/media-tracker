@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import type { SearchItem, MediaKind } from "@/types";
+import Image from "next/image";
 
 export default function MediaSearchBox({
   kind,
@@ -45,6 +46,7 @@ export default function MediaSearchBox({
   return (
     <div className="space-y-2">
       <input
+        aria-label={placeholder}
         className="input w-full"
         value={q}
         onChange={(e) => setQ(e.target.value)}
@@ -61,7 +63,7 @@ export default function MediaSearchBox({
                 onClick={() => onPick(it)}
               >
                 {it.posterUrl ? (
-                  <img src={it.posterUrl} alt="" width={40} height={60} className="w-10 h-14 rounded-lg object-cover flex-none" />
+                  <Image src={it.posterUrl} alt="" width={40} height={56} className="h-14 w-10 flex-none rounded-lg object-cover" />
                 ) : (
                   <div className="w-10 h-14 bg-bg-hover rounded-lg flex-none flex items-center justify-center text-text-tertiary">
                     🎬

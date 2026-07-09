@@ -113,9 +113,13 @@ export default function FriendsPage() {
   if (authLoading) return null;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 animate-fade-in-up">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-3xl font-bold">Friends</h1>
+    <div className="mx-auto max-w-5xl space-y-8 animate-fade-in-up">
+      <div className="flex items-end justify-between gap-5 border-b border-ink/15 pb-6">
+        <div>
+          <p className="eyebrow">Friends</p>
+          <h1 className="mt-2 font-serif text-4xl sm:text-5xl">Find people you know.</h1>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-text-secondary">Add friends to see the public ratings and reviews they share.</p>
+        </div>
         <button className="btn-outline text-sm" onClick={refreshAll} disabled={busy}>
           Refresh
         </button>
@@ -126,16 +130,23 @@ export default function FriendsPage() {
       )}
 
       {/* Search */}
-      <section className="card-glass space-y-3">
-        <h2 className="text-lg font-semibold">Find people</h2>
+      <section className="card-dark space-y-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#f58b76]">Search</p>
+          <h2 className="mt-1 font-serif text-2xl">Find a friend</h2>
+        </div>
         <form onSubmit={searchUsers} className="flex gap-2">
           <input
-            className="input flex-1"
+            className="input flex-1 !border-white/15 !bg-white/10 !text-paper placeholder:!text-paper/40"
             placeholder="Search by name or email..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <button className="btn" type="submit" disabled={!query || busy}>
+          <button
+            className="btn !bg-paper !text-ink !shadow-none hover:!bg-accent hover:!text-white"
+            type="submit"
+            disabled={!query || busy}
+          >
             Search
           </button>
         </form>
@@ -143,17 +154,17 @@ export default function FriendsPage() {
         {results.length > 0 && (
           <div className="space-y-2">
             {results.map((u) => (
-              <div key={u.id} className="rounded-xl bg-bg-hover/50 p-3 flex items-center justify-between">
+              <div key={u.id} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-semibold text-sm">
                     {u.displayName.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <div className="font-medium text-text-primary">{u.displayName}</div>
-                    <div className="text-xs text-text-tertiary">{u.email}</div>
+                    <div className="font-medium text-paper">{u.displayName}</div>
+                    <div className="text-xs text-paper/45">{u.email}</div>
                   </div>
                 </div>
-                <button className="btn-outline text-xs" onClick={() => sendRequest(u.id)} disabled={busy}>
+                <button className="btn-outline !border-white/20 !bg-white/10 !text-paper text-xs" onClick={() => sendRequest(u.id)} disabled={busy}>
                   Add friend
                 </button>
               </div>
@@ -223,8 +234,14 @@ export default function FriendsPage() {
       )}
 
       {/* Friends list */}
-      <section className="card-glass space-y-3">
-        <h2 className="text-lg font-semibold">Your friends</h2>
+      <section className="card space-y-4">
+        <div className="rule-title">
+          <div>
+            <p className="eyebrow">Connected</p>
+            <h2 className="mt-1 font-serif text-2xl">Your people</h2>
+          </div>
+          <span className="text-sm text-text-tertiary">{accepted.length}</span>
+        </div>
         {dataLoading ? (
           <div className="space-y-3">
             <FriendCardSkeleton />

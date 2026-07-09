@@ -5,6 +5,7 @@ import { FeedItemSkeleton } from "./LoadingSkeleton";
 import EmptyState from "./EmptyState";
 import Link from "next/link";
 import type { FeedItem } from "@/types";
+import Image from "next/image";
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -46,21 +47,23 @@ export default function FriendActivity({ items, loading, maxItems = 6 }: Props) 
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
       {items.slice(0, maxItems).map((it) => (
-        <div key={it.reviewId} className="rounded-xl bg-bg-hover/30 p-3 flex gap-3 hover:bg-bg-hover/50 transition-colors">
+        <div key={it.reviewId} className="flex gap-3 rounded-xl p-2.5 transition-colors hover:bg-bg-hover/60">
           {it.posterUrl ? (
-            <img src={it.posterUrl} alt="" className="w-8 h-12 rounded-md object-cover flex-none" />
+            <div className="relative h-14 w-10 flex-none overflow-hidden rounded-lg">
+              <Image src={it.posterUrl} alt="" fill sizes="40px" className="object-cover" />
+            </div>
           ) : (
             <div className="w-8 h-12 bg-bg-hover rounded-md flex-none flex items-center justify-center text-text-tertiary text-xs">🎬</div>
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-text-primary truncate">{it.author}</span>
+              <span className="truncate text-sm font-semibold text-text-primary">{it.author}</span>
               <span className="text-xs text-text-tertiary">{timeAgo(it.createdAt)}</span>
             </div>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-sm text-text-secondary truncate">{it.title}</span>
+              <Link href={`/media/${it.mediaId}`} className="truncate text-sm text-text-secondary hover:text-accent">{it.title}</Link>
               {it.rating != null && <StarsDisplay value={it.rating} small />}
             </div>
           </div>

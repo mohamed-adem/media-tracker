@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { useQuickAdd } from "./QuickAddProvider";
 import type { SearchItem, MediaKind } from "@/types";
+import Image from "next/image";
 
 export default function HeaderSearch() {
   const [expanded, setExpanded] = useState(false);
@@ -12,7 +13,7 @@ export default function HeaderSearch() {
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const quickAdd = useQuickAdd();
 
   // Click outside to close
@@ -36,7 +37,7 @@ export default function HeaderSearch() {
   // Debounced search
   useEffect(() => {
     if (!q.trim()) { setResults([]); return; }
-    clearTimeout(timerRef.current);
+    if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(async () => {
       setLoading(true);
       try {
@@ -50,7 +51,9 @@ export default function HeaderSearch() {
         setLoading(false);
       }
     }, 300);
-    return () => clearTimeout(timerRef.current);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, [q]);
 
   function pick(item: SearchItem) {
@@ -99,7 +102,7 @@ export default function HeaderSearch() {
               onClick={() => pick(it)}
             >
               {it.posterUrl ? (
-                <img src={it.posterUrl} alt="" className="w-8 h-12 rounded-md object-cover flex-none" />
+                  <Image src={it.posterUrl} alt="" width={32} height={48} className="h-12 w-8 flex-none rounded-md object-cover" />
               ) : (
                 <div className="w-8 h-12 bg-bg-hover rounded-md flex-none flex items-center justify-center text-text-tertiary text-xs">🎬</div>
               )}

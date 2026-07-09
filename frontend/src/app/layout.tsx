@@ -4,24 +4,23 @@ import Header from "./components/Header";
 import { QuickAddProvider } from "./components/QuickAddProvider";
 
 export const metadata: Metadata = {
-  title: "MediaTracker",
-  description: "Track movies, shows, games, and books. See friends' reviews.",
+  title: "Media Tracker — your culture, in one place",
+  description: "Keep a personal library of the movies, shows, games, and books that shape your taste.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body
-        className="bg-bg-base text-text-primary antialiased min-h-screen flex flex-col"
+        className="min-h-screen bg-bg-base text-text-primary antialiased"
       >
         <QuickAddProvider>
           <Header />
-          <div className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-            {children}
-          </div>
-          <footer className="border-t border-border bg-bg-surface/60">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-center text-xs text-text-tertiary">
-              Built with Next.js + Tailwind & Spring Boot
+          <main className="page-shell">{children}</main>
+          <footer className="mt-14 border-t border-ink/15">
+            <div className="mx-auto flex min-h-20 w-full max-w-[1440px] items-center justify-between gap-4 px-4 text-xs text-text-tertiary sm:px-6 lg:px-10">
+              <span>Media Tracker</span>
+              <span>Movies · shows · games · books</span>
             </div>
           </footer>
         </QuickAddProvider>

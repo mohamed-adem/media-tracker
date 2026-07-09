@@ -5,6 +5,7 @@ import {
   loadRefreshToken,
   setAccessToken,
   saveTokens,
+  logout,
 } from "@/lib/auth";
 
 type FetchOpts = {
@@ -69,7 +70,9 @@ async function refreshAccessTokenOnce(): Promise<void> {
     });
 
     if (!res.ok) {
+      logout();
       refreshing = null;
+      if (typeof window !== "undefined") window.location.assign("/login");
       throw new Error("Session expired");
     }
 
