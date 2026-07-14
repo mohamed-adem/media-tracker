@@ -44,3 +44,6 @@ pgdata/
 redisdata/
 docker-compose.override.yml
 .env.docker
+
+# Local agent handoff and development notes
+AGENT_CONTEXT.md

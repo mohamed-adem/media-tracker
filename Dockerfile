@@ -2,7 +2,7 @@ FROM gradle:8.7-jdk21 AS builder
 WORKDIR /src
 COPY . .
 
-RUN gradle -p backend/media-tracker-api clean bootJar -x test --no-daemon --stacktrace
+RUN gradle -p backend/media-tracker-api clean bootJar --no-daemon --stacktrace
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
