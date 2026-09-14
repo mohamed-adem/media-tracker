@@ -71,7 +71,7 @@ const MEDIA_CATALOG = [
     externalId: '693134',
     title: 'Dune: Part Two',
     year: 2024,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/1pdfLPoVxWGlB2G2JzVigW2Z4a1.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/6izwz7rsy95ARzTR3poZ8H6c5pp.jpg',
     reviews: [
       { rating: 5.0, body: 'Cinematic spectacle on an epic scale. Denis Villeneuve created a modern sci-fi legend.' },
       { rating: 4.5, body: 'Sound design and cinematography are out of this world. Must watch on a big screen!' }
@@ -80,33 +80,33 @@ const MEDIA_CATALOG = [
 
   // TV Shows
   {
-    kind: 'TV',
+    kind: 'SHOW',
     externalId: '1396',
     title: 'Breaking Bad',
     year: 2008,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/zteh9ebKztWKVjT2UtYrOzOTA1e.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/anFx9aTOOYqgS3v7x3R84Kz67ly.jpg',
     reviews: [
       { rating: 5.0, body: 'Flawless television writing. The character arc of Walter White is unparalleled.' },
       { rating: 5.0, body: 'Every single season builds the tension brilliantly. Ozymandias is 10/10 TV.' }
     ]
   },
   {
-    kind: 'TV',
-    externalId: '95557',
+    kind: 'SHOW',
+    externalId: '95396',
     title: 'Severance',
     year: 2022,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/4n4eM2lP25k0j9n7J3lK1s4tV5u.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/pPHpeI2X1qEd1CS1SeyrdhZ4qnT.jpg',
     reviews: [
       { rating: 4.5, body: 'Brilliantly dystopian concept and mystery box writing. Can\'t wait for the next season!' },
       { rating: 5.0, body: 'The finale episode was pure anxiety and excitement. Incredible set design and tone.' }
     ]
   },
   {
-    kind: 'TV',
+    kind: 'SHOW',
     externalId: '94605',
     title: 'Arcane',
     year: 2021,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/fqld228QqXSc3sflvywLVOwWCG1.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/fqldf2t8ztc9aiwn3k6mlX3tvRT.jpg',
     reviews: [
       { rating: 5.0, body: 'Redefined what animated television can achieve. World-class art style and deep character relationships.' },
       { rating: 4.5, body: 'Even if you don\'t play League of Legends, this show is an absolute masterpiece.' }
@@ -119,7 +119,7 @@ const MEDIA_CATALOG = [
     externalId: '326243',
     title: 'Elden Ring',
     year: 2022,
-    posterUrl: 'https://media.rawg.io/media/games/b11/b115b2bc43b89e217b1435013d65e148.jpg',
+    posterUrl: 'https://media.rawg.io/media/games/b29/b294fdd866dcdb643e7bab370a552855.jpg',
     reviews: [
       { rating: 5.0, body: 'Unmatched sense of discovery and exploration. The Lands Between are full of secrets.' },
       { rating: 4.5, body: 'Challenging bosses, incredible build variety, and sublime world design.' }
@@ -130,7 +130,7 @@ const MEDIA_CATALOG = [
     externalId: '3328',
     title: 'The Witcher 3: Wild Hunt',
     year: 2015,
-    posterUrl: 'https://media.rawg.io/media/games/618/618c47b6e369d39b4ab136e0dbe61bd2.jpg',
+    posterUrl: 'https://media.rawg.io/media/games/618/618c2031a07bbff6b4f611f10b6bcdbc.jpg',
     reviews: [
       { rating: 5.0, body: 'Side quests in this game have better stories than most full RPGs. Geralt\'s journey is unforgettable.' },
       { rating: 4.5, body: 'Blood and Wine DLC alone is better than most standalone games.' }
@@ -141,7 +141,7 @@ const MEDIA_CATALOG = [
     externalId: '9767',
     title: 'Hollow Knight',
     year: 2017,
-    posterUrl: 'https://media.rawg.io/media/games/4cf/4cfc9b4185019e39cf054585042459d8.jpg',
+    posterUrl: 'https://media.rawg.io/media/games/4cf/4cfc6b7f1850590a4634b08bfab308ab.jpg',
     reviews: [
       { rating: 5.0, body: 'Best metroidvania ever created. Beautiful hand-drawn art and haunting atmosphere.' },
       { rating: 4.5, body: 'Tight controls, intense boss fights, and rewarding exploration of Hallownest.' }
@@ -320,9 +320,9 @@ async function main() {
 
   for (let i = 0; i < activeUsers.length; i++) {
     const user = activeUsers[i];
-    // Assign 4 to 6 media items per user
+    // Keep the public demo broad and deterministic; vary sample profiles.
     const mediaPool = [...MEDIA_CATALOG].sort(() => 0.5 - Math.random());
-    const userItems = mediaPool.slice(0, 4 + (i % 3));
+    const userItems = i === 0 ? MEDIA_CATALOG : mediaPool.slice(0, 4 + (i % 3));
 
     for (let j = 0; j < userItems.length; j++) {
       const media = userItems[j];

@@ -23,8 +23,8 @@ public class MediaItemService {
             : create(kind, null, title, year, posterUrl);
 
         boolean changed = false;
-        if ((media.getPosterUrl() == null || media.getPosterUrl().isBlank())
-            && posterUrl != null && !posterUrl.isBlank()) {
+        if (posterUrl != null && !posterUrl.isBlank()
+            && !posterUrl.equals(media.getPosterUrl())) {
             media.setPosterUrl(posterUrl);
             changed = true;
         }
