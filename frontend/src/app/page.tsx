@@ -31,6 +31,7 @@ export default function HomePage() {
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <Link href="/register" className="btn">Start your library</Link>
               <Link href="/login" className="btn-outline">I already have one</Link>
+              <Link href="/login" className="text-sm font-semibold text-accent hover:underline">Try the demo</Link>
             </div>
           )}
           <div className="mt-12 grid max-w-xl grid-cols-3 border-y border-ink/15 py-5">

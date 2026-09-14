@@ -98,6 +98,14 @@ export default function RegisterPage() {
             </button>
           </form>
 
+          <div className="rounded-xl border border-accent/20 bg-accent/5 p-4">
+            <p className="text-sm font-semibold text-text-primary">Just browsing?</p>
+            <p className="mt-1 text-xs leading-5 text-text-secondary">Explore a sample library before creating your own account.</p>
+            <Link href="/login" className="btn-outline mt-3 block w-full text-center text-sm">
+              Try the demo
+            </Link>
+          </div>
+
           <p className="text-sm text-text-secondary">
             Already have an account?{" "}
             <Link href="/login" className="text-accent hover:underline">
