@@ -53,16 +53,21 @@ export function StarRating({ value, onChange }: { value: number; onChange: (v: n
       </div>
       <label className="flex items-center gap-2 text-sm font-semibold text-text-secondary">
         Score
-        <select
-          className="input !w-auto !py-2"
-          value={value.toFixed(1)}
-          onChange={(event) => onChange(Number(event.target.value))}
+        <input
+          className="input !w-20 !py-2"
+          type="number"
+          min="0.5"
+          max="5"
+          step="0.5"
+          value={value}
+          onChange={(event) => {
+            const next = event.currentTarget.valueAsNumber;
+            if (Number.isFinite(next) && next >= 0.5 && next <= 5) {
+              onChange(Math.round(next * 2) / 2);
+            }
+          }}
           aria-label="Numeric rating"
-        >
-          {Array.from({ length: 10 }, (_, index) => (index + 1) / 2).map((rating) => (
-            <option key={rating} value={rating.toFixed(1)}>{rating.toFixed(1)}</option>
-          ))}
-        </select>
+        />
         <span className="text-text-tertiary">/ 5</span>
       </label>
     </div>
