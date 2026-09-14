@@ -7,7 +7,7 @@ import { loadAccessToken } from "@/lib/auth";
 import { useRequireAuth } from "@/hooks/useAuth";
 import { FriendCardSkeleton } from "@/app/components/LoadingSkeleton";
 import EmptyState from "@/app/components/EmptyState";
-import type { FriendView, IncomingRequest, SuggestedUser, UserResult } from "@/types";
+import type { FriendView, IncomingRequest, UserResult } from "@/types";
 
 export default function FriendsPage() {
   const { loading: authLoading } = useRequireAuth();
@@ -16,7 +16,6 @@ export default function FriendsPage() {
   const [incoming, setIncoming] = useState<IncomingRequest[]>([]);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UserResult[]>([]);
-  const [suggestions, setSuggestions] = useState<SuggestedUser[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
@@ -30,8 +29,6 @@ export default function FriendsPage() {
       setFriends(myFriends);
       const reqs = await apiFetch<IncomingRequest[]>("/api/friends/requests", { token });
       setIncoming(reqs);
-      const suggested = await apiFetch<SuggestedUser[]>("/api/users/suggestions", { token });
-      setSuggestions(suggested);
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : "Failed to load friends data");
     } finally {
@@ -176,35 +173,6 @@ export default function FriendsPage() {
           </div>
         )}
       </section>
-
-      {suggestions.length > 0 && (
-        <section className="card-glass space-y-4">
-          <div>
-            <p className="eyebrow">Shared taste</p>
-            <h2 className="mt-1 font-serif text-2xl">People you might know</h2>
-            <p className="mt-1 text-sm text-text-secondary">Based on public titles in your library. Nothing is sent until you choose to add someone.</p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {suggestions.map((user) => (
-              <div key={user.id} className="rounded-xl border border-ink/10 bg-bg-surface p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 font-semibold text-accent">
-                    {user.displayName.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <Link href={`/profile/${user.id}`} className="font-medium text-text-primary hover:text-accent">{user.displayName}</Link>
-                    <p className="mt-1 text-xs text-text-secondary">{user.reason}</p>
-                    {user.bio && <p className="mt-2 line-clamp-2 text-xs text-text-tertiary">{user.bio}</p>}
-                  </div>
-                </div>
-                <button className="btn-outline mt-4 w-full text-xs" onClick={() => sendRequest(user.id)} disabled={busy}>
-                  Add friend
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* Incoming requests */}
       {incoming.length > 0 && (

@@ -74,14 +74,6 @@ export type UserResult = {
   email: string;
 };
 
-export type SuggestedUser = {
-  id: string;
-  displayName: string;
-  bio: string | null;
-  sharedMediaCount: number;
-  reason: string;
-};
-
 export type PublicProfileEntry = {
   mediaId: string;
   title: string;
