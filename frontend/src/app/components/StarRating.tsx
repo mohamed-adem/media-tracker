@@ -29,35 +29,42 @@ export function StarsDisplay({ value, small = false }: { value: number; small?: 
 /* ---------- Interactive star rating ---------- */
 
 export function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  function handleClick(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const v = Math.max(0.5, Math.min(5, Math.round(pct * 10) / 2));
-    onChange(v);
-  }
-
   return (
-    <div
-      className="inline-flex items-center cursor-pointer select-none"
-      onClick={handleClick}
-      role="slider"
-      tabIndex={0}
-      aria-valuemin={0.5}
-      aria-valuemax={5}
-      aria-valuenow={value}
-      aria-label="Rating"
-      onKeyDown={(e) => {
-        if (e.key === "ArrowRight" || e.key === "ArrowUp") {
-          e.preventDefault();
-          onChange(Math.min(5, value + 0.5));
-        } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
-          e.preventDefault();
-          onChange(Math.max(0.5, value - 0.5));
-        }
-      }}
-    >
-      <StarsDisplay value={value} />
-      <span className="ml-2 text-sm text-text-secondary">{value.toFixed(1)}</span>
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="inline-flex gap-1" role="group" aria-label={`Rating: ${value.toFixed(1)} out of 5`}>
+        {Array.from({ length: 5 }).map((_, index) => {
+          const starValue = index + 1;
+          const fill = Math.max(0, Math.min(1, value - index));
+          return (
+            <button
+              key={starValue}
+              type="button"
+              className="flex h-11 w-11 items-center justify-center rounded-xl border border-ink/15 bg-bg-surface text-3xl leading-none shadow-sm transition hover:border-star hover:bg-star/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              aria-label={`Set rating to ${starValue} stars`}
+              onClick={() => onChange(starValue)}
+            >
+              <span className="relative inline-block text-border" aria-hidden="true">
+                ★
+                <span className="absolute inset-0 overflow-hidden text-star" style={{ width: `${fill * 100}%` }}>★</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <label className="flex items-center gap-2 text-sm font-semibold text-text-secondary">
+        Score
+        <select
+          className="input !w-auto !py-2"
+          value={value.toFixed(1)}
+          onChange={(event) => onChange(Number(event.target.value))}
+          aria-label="Numeric rating"
+        >
+          {Array.from({ length: 10 }, (_, index) => (index + 1) / 2).map((rating) => (
+            <option key={rating} value={rating.toFixed(1)}>{rating.toFixed(1)}</option>
+          ))}
+        </select>
+        <span className="text-text-tertiary">/ 5</span>
+      </label>
     </div>
   );
 }

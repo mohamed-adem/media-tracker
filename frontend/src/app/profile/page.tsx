@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiFetch, patchJSON } from "@/lib/api";
 import { logout } from "@/lib/auth";
 import { useRequireAuth } from "@/hooks/useAuth";
 import { ProfileHeaderSkeleton } from "@/app/components/LoadingSkeleton";
 import CollectionGrid from "@/app/components/CollectionGrid";
+import { StarsDisplay } from "@/app/components/StarRating";
 import type { LibraryEntry, Me } from "@/types";
 
 export default function ProfilePage() {
@@ -63,6 +65,11 @@ export default function ProfilePage() {
       since: me?.createdAt ? new Date(me.createdAt).toLocaleDateString(undefined, { month: "short", year: "numeric" }) : "-",
     };
   }, [entries, me?.createdAt]);
+
+  const reviewedEntries = useMemo(
+    () => entries.filter((entry) => entry.rating != null),
+    [entries]
+  );
 
   async function saveProfile(e: React.FormEvent) {
     e.preventDefault();
@@ -138,6 +145,35 @@ export default function ProfilePage() {
         <StatCard label="Shows" value={stats.shows.toString()} />
         <StatCard label="Games" value={stats.games.toString()} />
         <StatCard label="Since" value={stats.since} />
+      </section>
+
+      <section className="space-y-5">
+        <div className="rule-title">
+          <div>
+            <p className="eyebrow">Written by you</p>
+            <h2 className="mt-1 font-serif text-3xl">Your reviews</h2>
+          </div>
+          <span className="text-xs text-text-tertiary">{reviewedEntries.length} rated</span>
+        </div>
+        {reviewedEntries.length === 0 ? (
+          <div className="card text-sm text-text-secondary">Your ratings and reviews will appear here after you finish a title.</div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {reviewedEntries.map((entry) => (
+              <article key={entry.id} className="card !p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <Link href={`/media/${entry.mediaId}`} className="font-serif text-xl text-text-primary hover:text-accent">{entry.title}</Link>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-wider text-text-tertiary">{entry.kind}{entry.year ? ` · ${entry.year}` : ""}</p>
+                  </div>
+                  <StarsDisplay value={entry.rating!} />
+                </div>
+                <p className="mt-3 line-clamp-3 text-sm leading-6 text-text-secondary">{entry.reviewBody || "You rated this without writing a review."}</p>
+                <Link href={`/media/${entry.mediaId}`} className="mt-3 inline-flex text-xs font-semibold text-accent hover:underline">View or edit review →</Link>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="space-y-5">

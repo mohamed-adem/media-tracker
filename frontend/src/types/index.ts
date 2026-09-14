@@ -82,6 +82,26 @@ export type SuggestedUser = {
   reason: string;
 };
 
+export type PublicProfileEntry = {
+  mediaId: string;
+  title: string;
+  kind: MediaKind;
+  year: number | null;
+  posterUrl: string | null;
+  status: LibraryStatus;
+  rating: number | null;
+  reviewBody: string | null;
+  reviewedAt: string | null;
+};
+
+export type PublicProfile = {
+  id: string;
+  displayName: string;
+  bio: string | null;
+  createdAt: string;
+  entries: PublicProfileEntry[];
+};
+
 export type SearchItem = {
   kind: MediaKind;
   externalId: string | null;

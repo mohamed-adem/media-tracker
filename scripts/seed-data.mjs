@@ -184,6 +184,35 @@ const MEDIA_CATALOG = [
   }
 ];
 
+const REVIEW_VOICES = [
+  'The ending stayed with me.',
+  'I would happily revisit this one.',
+  'The pacing worked better for me than I expected.',
+  'A few rough edges did not spoil the overall experience.',
+  'The atmosphere was the strongest part for me.',
+  'I liked the ideas more than every execution choice.',
+  'This landed especially well on a second look.',
+  'The characters made this worth finishing.',
+  'I admired it more than I loved it.',
+  'It started slowly, then completely won me over.',
+  'The craft is excellent even where the story drags.',
+  'This is exactly the kind of story I look for.',
+  'I enjoyed the smaller moments most.',
+  'Not flawless, but memorable and easy to recommend.',
+  'The world-building carried the experience.',
+  'It earned its strongest moments without rushing them.'
+];
+
+const RATING_PATTERN = [5, 4.5, 4, 3.5, 4.5, 3, 5, 4, 3.5, 4];
+
+function reviewFor(userIndex, itemIndex, media) {
+  const source = media.reviews[(userIndex * 2 + itemIndex) % media.reviews.length];
+  return {
+    rating: RATING_PATTERN[(userIndex * 3 + itemIndex) % RATING_PATTERN.length],
+    body: `${source.body} ${REVIEW_VOICES[userIndex % REVIEW_VOICES.length]}`
+  };
+}
+
 async function apiRequest(endpoint, options = {}) {
   const url = `${BASE_URL}${endpoint}`;
   const headers = {
@@ -317,16 +346,39 @@ async function main() {
   console.log(`--- STEP 3: Populating Media Libraries & Reviews ---`);
   let entryCount = 0;
   let reviewCount = 0;
+  let removedCount = 0;
 
   for (let i = 0; i < activeUsers.length; i++) {
     const user = activeUsers[i];
     // Keep the public demo broad and deterministic; vary sample profiles.
-    const mediaPool = [...MEDIA_CATALOG].sort(() => 0.5 - Math.random());
-    const userItems = i === 0 ? MEDIA_CATALOG : mediaPool.slice(0, 4 + (i % 3));
+    const userItems = i === 0
+      ? MEDIA_CATALOG
+      : Array.from(
+          { length: 3 + (i % 6) },
+          (_, itemIndex) => MEDIA_CATALOG[(i * 3 + itemIndex * 2) % MEDIA_CATALOG.length]
+        );
+    const currentLibrary = await apiRequest('/api/library', {
+      headers: { Authorization: `Bearer ${user.token}` }
+    });
+    const desiredKeys = new Set(userItems.map(media => `${media.kind}:${media.title}`));
+    for (const entry of currentLibrary.ok ? currentLibrary.data : []) {
+      if (!desiredKeys.has(`${entry.kind}:${entry.title}`)) {
+        const removed = await apiRequest(`/api/library/${entry.id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${user.token}` }
+        });
+        if (removed.ok) removedCount++;
+      }
+    }
+    const existingByTitle = new Map(
+      (currentLibrary.ok ? currentLibrary.data : [])
+        .filter(entry => desiredKeys.has(`${entry.kind}:${entry.title}`))
+        .map(entry => [`${entry.kind}:${entry.title}`, entry])
+    );
 
     for (let j = 0; j < userItems.length; j++) {
       const media = userItems[j];
-      const reviewOption = media.reviews[j % media.reviews.length];
+      const reviewOption = reviewFor(i, j, media);
       
       const payload = {
         kind: media.kind,
@@ -353,13 +405,22 @@ async function main() {
       if (res.ok) {
         entryCount++;
         reviewCount++;
-      } else {
-        // Entry might already exist if re-running
+      } else if (res.status === 409) {
+        const existing = existingByTitle.get(`${media.kind}:${media.title}`);
+        if (existing) {
+          const updateReview = await apiRequest(`/api/library/${existing.id}/review`, {
+            method: 'PUT',
+            headers: { Authorization: `Bearer ${user.token}` },
+            body: JSON.stringify({ rating: reviewOption.rating, body: reviewOption.body })
+          });
+          if (updateReview.ok) reviewCount++;
+        }
       }
     }
   }
 
   console.log(`  ✓ Created ${entryCount} library entries and ${reviewCount} reviews across all users.\n`);
+  console.log(`  ✓ Removed ${removedCount} stale sample entries outside each profile's assigned mix.\n`);
 
   console.log(`====================================================`);
   console.log(`🎉 SEEDING COMPLETE!`);

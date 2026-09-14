@@ -133,7 +133,7 @@ export default function MediaDetailPage() {
                 {detail.friendReviews.map((review) => (
                   <article key={review.reviewId} className="card">
                     <div className="flex items-center justify-between gap-3">
-                      <h3 className="font-semibold">{review.author}</h3>
+                      <Link href={`/profile/${review.authorId}`} className="font-semibold hover:text-accent">{review.author}</Link>
                       <StarsDisplay value={review.rating} small />
                     </div>
                     {review.body ? <p className="mt-4 text-sm leading-6 text-text-secondary">{review.body}</p> : <p className="mt-4 text-sm text-text-tertiary">Left a rating without a written review.</p>}

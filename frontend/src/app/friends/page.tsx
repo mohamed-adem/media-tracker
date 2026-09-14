@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch, getJSON, postJSON } from "@/lib/api";
 import { loadAccessToken } from "@/lib/auth";
@@ -163,7 +164,7 @@ export default function FriendsPage() {
                     {u.displayName.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <div className="font-medium text-paper">{u.displayName}</div>
+                    <Link href={`/profile/${u.id}`} className="font-medium text-paper hover:text-[#f58b76]">{u.displayName}</Link>
                     <div className="text-xs text-paper/45">{u.email}</div>
                   </div>
                 </div>
@@ -191,7 +192,7 @@ export default function FriendsPage() {
                     {user.displayName.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-medium text-text-primary">{user.displayName}</div>
+                    <Link href={`/profile/${user.id}`} className="font-medium text-text-primary hover:text-accent">{user.displayName}</Link>
                     <p className="mt-1 text-xs text-text-secondary">{user.reason}</p>
                     {user.bio && <p className="mt-2 line-clamp-2 text-xs text-text-tertiary">{user.bio}</p>}
                   </div>
@@ -221,7 +222,7 @@ export default function FriendsPage() {
                   {req.requesterDisplayName.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <div className="font-medium text-text-primary">{req.requesterDisplayName}</div>
+                  <Link href={`/profile/${req.requesterId}`} className="font-medium text-text-primary hover:text-accent">{req.requesterDisplayName}</Link>
                   <div className="text-xs text-text-tertiary">
                     {new Date(req.createdAt).toLocaleDateString()}
                   </div>
@@ -251,7 +252,7 @@ export default function FriendsPage() {
                   {f.friendDisplayName.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <div className="font-medium text-text-primary">{f.friendDisplayName}</div>
+                  <Link href={`/profile/${f.friendId}`} className="font-medium text-text-primary hover:text-accent">{f.friendDisplayName}</Link>
                   <div className="text-xs text-text-tertiary">
                     Sent {new Date(f.createdAt).toLocaleDateString()}
                   </div>
@@ -293,7 +294,7 @@ export default function FriendsPage() {
                   {f.friendDisplayName.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1">
-                  <div className="font-medium text-text-primary">{f.friendDisplayName}</div>
+                  <Link href={`/profile/${f.friendId}`} className="font-medium text-text-primary hover:text-accent">{f.friendDisplayName}</Link>
                 </div>
                 <span className="w-2 h-2 rounded-full bg-success" title="Connected" />
               </div>

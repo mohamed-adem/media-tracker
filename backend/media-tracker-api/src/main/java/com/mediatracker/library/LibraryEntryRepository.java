@@ -13,6 +13,9 @@ public interface LibraryEntryRepository extends JpaRepository<LibraryEntry, UUID
     List<LibraryEntry> findByUserIdOrderByUpdatedAtDesc(UUID userId);
 
     @EntityGraph(attributePaths = "media")
+    List<LibraryEntry> findByUserIdAndPrivateEntryFalseOrderByUpdatedAtDesc(UUID userId);
+
+    @EntityGraph(attributePaths = "media")
     List<LibraryEntry> findByUserIdInAndPrivateEntryFalse(Collection<UUID> userIds);
 
     @EntityGraph(attributePaths = "media")
