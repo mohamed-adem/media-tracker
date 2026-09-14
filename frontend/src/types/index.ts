@@ -74,6 +74,14 @@ export type UserResult = {
   email: string;
 };
 
+export type SuggestedUser = {
+  id: string;
+  displayName: string;
+  bio: string | null;
+  sharedMediaCount: number;
+  reason: string;
+};
+
 export type SearchItem = {
   kind: MediaKind;
   externalId: string | null;

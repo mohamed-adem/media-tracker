@@ -35,6 +35,25 @@ export default function LoginPage() {
     }
   }
 
+  async function tryDemo() {
+    setEmail("demo@mediatracker.app");
+    setPassword("DemoUserPass123!");
+    setLoading(true);
+    setErr("");
+    try {
+      const res = await postJSON<{ accessToken: string; refreshToken: string }>(
+        "/api/auth/login",
+        { email: "demo@mediatracker.app", password: "DemoUserPass123!" }
+      );
+      saveTokens(res.accessToken, res.refreshToken);
+      r.push("/dashboard");
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : "Demo account is unavailable");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="grid min-h-[68vh] items-stretch overflow-hidden rounded-[2rem] border border-ink/15 bg-bg-surface shadow-[0_24px_70px_rgba(49,42,32,0.12)] lg:grid-cols-2">
       <div className="hidden bg-ink p-12 text-paper lg:flex lg:flex-col lg:justify-between">
@@ -85,6 +104,14 @@ export default function LoginPage() {
               {loading ? "Signing in..." : "Log in"}
             </button>
           </form>
+
+          <div className="rounded-xl border border-accent/20 bg-accent/5 p-4">
+            <p className="text-sm font-semibold text-text-primary">Want to look around first?</p>
+            <p className="mt-1 text-xs leading-5 text-text-secondary">Use the demo account to explore a sample library, reviews, and friend activity.</p>
+            <button type="button" className="btn-outline mt-3 w-full text-sm" onClick={tryDemo} disabled={loading}>
+              Try the demo
+            </button>
+          </div>
 
           <p className="text-sm text-text-secondary">
             Don&apos;t have an account?{" "}
